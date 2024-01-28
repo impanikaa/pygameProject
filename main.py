@@ -67,6 +67,7 @@ class GameState:
                         # Добавьте здесь действия для нажатия на кнопку "Настройки"
                         return "settings"
                     elif self.current_state.planet_1_rect.collidepoint(event.pos):
+                        print(1)
                         self.set_selected_planet(1)
                         self.current_state.switch_to_planet_screen(1)
                     elif self.current_state.planet_2_rect.collidepoint(event.pos):
@@ -99,21 +100,20 @@ class GameState:
 # настройки
 class SettingsOverlay:
     def __init__(self):
-        self.rect = pygame.Rect(100, 100, 600, 400)
         self.font = pygame.font.Font(None, 28)
         self.volume_music = 50
         self.volume_effects = 50
         self.mute_music = False
         self.mute_effects = False
-        self.exit_button = pygame.Rect(150, 354, 200, 50)
-        self.close_button = pygame.Rect(400, 354, 200, 50)
+        self.exit_button = pygame.Rect(250, 354, 200, 50)
+        self.close_button = pygame.Rect(500, 354, 200, 50)
         self.update_buttons()
 
     def update_buttons(self):
-        self.volume_music_button = pygame.Rect(150, 155, 200, 50)
-        self.volume_effects_button = pygame.Rect(150, 240, 200, 50)
-        self.mute_music_button = pygame.Rect(400, 155, 200, 50)
-        self.mute_effects_button = pygame.Rect(400, 240, 200, 50)
+        self.volume_music_button = pygame.Rect(250, 155, 200, 50)
+        self.volume_effects_button = pygame.Rect(250, 240, 200, 50)
+        self.mute_music_button = pygame.Rect(500, 155, 200, 50)
+        self.mute_effects_button = pygame.Rect(500, 240, 200, 50)
 
     def handle_events(self, events):
         for event in events:
@@ -140,7 +140,6 @@ class SettingsOverlay:
         return None
 
     def draw(self, screen):
-        pygame.draw.rect(screen, space_color, self.rect)
 
         exit_text = self.font.render("Выйти из игры", True, space_color)
         exit_rect = exit_text.get_rect(center=self.exit_button.center)
@@ -166,14 +165,15 @@ class SettingsOverlay:
         pygame.draw.rect(screen, vivid_orange, self.mute_effects_button, 2)
 
         if self.mute_music:
-            pygame.draw.rect(screen, dark_grey, self.mute_music_button)
+            pygame.draw.rect(screen, vivid_orange, self.mute_music_button)
         if self.mute_effects:
-            pygame.draw.rect(screen, dark_grey, self.mute_effects_button)
+            pygame.draw.rect(screen, vivid_orange, self.mute_effects_button)
 
-        screen.blit(volume_music_text, (150, 130))
-        screen.blit(volume_effects_text, (150, 215))
-        screen.blit(mute_music_text, (400, 130))
-        screen.blit(mute_effects_text, (400, 215))
+        screen.blit(volume_music_text, (250, 130))
+        screen.blit(volume_effects_text, (250, 215))
+        screen.blit(mute_music_text, (500, 130))
+        screen.blit(mute_effects_text, (500, 215))
+
 
 # меню настроек
 class SettingsMenu(Scene):
@@ -187,7 +187,6 @@ class SettingsMenu(Scene):
                 return "close_settings"
         result = self.settings_overlay.handle_events(events)
         if result:
-            print(result)
             if result == "close_settings":
                 return "main_menu"
         return None
