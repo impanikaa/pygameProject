@@ -81,7 +81,6 @@ class GameState:
                         self.switch_to_planet_screen(4)
                     elif self.current_state.click_button_rect.collidepoint(event.pos):
                         self.set_click_state(True)
-                    elif self.current_state.click_button_rect.collidepoint(event.pos):
                         self.current_state.clicked_on_click_button = True
 
     def update(self):
