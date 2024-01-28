@@ -45,16 +45,19 @@ class GameState:
         return self.selected_planet
 
     def switch_to_planet_screen(self, planet_id):
-        self.current_state = PlanetScreenState(planet_id)
+        self.current_state = PlanetScreenState(planet_id, self.current_state)
         self.planet_screen_active = True
 
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
 
+    # def switch_to_settings(self):
+
     def handle_events(self, events):
         for event in events:
             if self.planet_screen_active:
-                self.current_state.handle_events(event)
+                pass
+                # self.current_state.handle_events(event)
             else:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state.shop_button_rect.collidepoint(event.pos):
@@ -289,6 +292,7 @@ class GameScreenState:
         if self.clicked_on_click_button:
             self.money += self.money_click_increment
             self.clicked_on_click_button = False
+
     def handle_events(self, events):
         for event in events:
             if self.planet_screen_active:
@@ -387,9 +391,10 @@ class GameScreenState:
 
 
 class PlanetScreenState:
-    def __init__(self, planet_id):
+    def __init__(self, planet_id, current_state):
         # Добавьте здесь инициализацию для экрана с планетой
         self.planet_id = planet_id
+        self.current_state = current_state
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)  # Ваши координаты орбиты здесь
 
@@ -400,6 +405,9 @@ class PlanetScreenState:
                 if self.orbit_rect.collidepoint(event.pos):
                     # Здесь вы можете выполнить действия, связанные с нажатием на планету
                     pass
+                elif self.current_state.setting_button_rect.collidepoint(event.pos):
+                    # Добавьте здесь действия для нажатия на кнопку "Настройки"
+                    return "settings"
 
     def update(self):
         # Логика обновления для экрана с планетой
