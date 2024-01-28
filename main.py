@@ -14,6 +14,7 @@ vivid_orange = (255, 194, 38)
 white = (255, 255, 255)
 space_color = (0, 2, 18)
 
+
 class Scene:
     def __init__(self):
         pass
@@ -122,10 +123,12 @@ class SettingsOverlay:
                 elif self.close_button.collidepoint(event.pos):
                     return "close_settings"
                 elif self.volume_music_button.collidepoint(event.pos):
-                    self.volume_music = max(0, min(100, (event.pos[0] - self.volume_music_button.x) / self.volume_music_button.width * 100))
+                    self.volume_music = max(0, min(100, (
+                                event.pos[0] - self.volume_music_button.x) / self.volume_music_button.width * 100))
                     self.mute_music = False
                 elif self.volume_effects_button.collidepoint(event.pos):
-                    self.volume_effects = max(0, min(100, (event.pos[0] - self.volume_effects_button.x) / self.volume_effects_button.width * 100))
+                    self.volume_effects = max(0, min(100, (
+                                event.pos[0] - self.volume_effects_button.x) / self.volume_effects_button.width * 100))
                     self.mute_effects = False
                 elif self.mute_music_button.collidepoint(event.pos):
                     self.mute_music = not self.mute_music
@@ -151,15 +154,23 @@ class SettingsOverlay:
         pygame.draw.rect(screen, vivid_orange, self.close_button)
         screen.blit(close_text, close_rect)
 
-        volume_music_text = self.font.render(f"Music Volume: {int(self.volume_music)}%", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
-        volume_effects_text = self.font.render(f"Effects Volume: {int(self.volume_effects)}%", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
-        mute_music_text = self.font.render(f"Mute Music: {self.mute_music}", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
-        mute_effects_text = self.font.render(f"Mute Effects: {self.mute_effects}", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        volume_music_text = self.font.render(f"Music Volume: {int(self.volume_music)}%", True,
+                                             vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        volume_effects_text = self.font.render(f"Effects Volume: {int(self.volume_effects)}%", True,
+                                               vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        mute_music_text = self.font.render(f"Mute Music: {self.mute_music}", True,
+                                           vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        mute_effects_text = self.font.render(f"Mute Effects: {self.mute_effects}", True,
+                                             vivid_orange)  # Изменяем цвет на (255, 194, 38)
 
         pygame.draw.rect(screen, vivid_orange, self.volume_music_button, 2)  # Изменяем цвет на (255, 194, 38)
         pygame.draw.rect(screen, vivid_orange, self.volume_effects_button, 2)  # Изменяем цвет на (255, 194, 38)
-        pygame.draw.rect(screen, vivid_orange, (self.volume_music_button.x, self.volume_music_button.y, self.volume_music_button.width * self.volume_music / 100, self.volume_music_button.height))
-        pygame.draw.rect(screen, vivid_orange, (self.volume_effects_button.x, self.volume_effects_button.y, self.volume_effects_button.width * self.volume_effects / 100, self.volume_effects_button.height))
+        pygame.draw.rect(screen, vivid_orange, (self.volume_music_button.x, self.volume_music_button.y,
+                                                self.volume_music_button.width * self.volume_music / 100,
+                                                self.volume_music_button.height))
+        pygame.draw.rect(screen, vivid_orange, (self.volume_effects_button.x, self.volume_effects_button.y,
+                                                self.volume_effects_button.width * self.volume_effects / 100,
+                                                self.volume_effects_button.height))
 
         pygame.draw.rect(screen, vivid_orange, self.mute_music_button, 2)  # Изменяем цвет на (255, 194, 38)
         pygame.draw.rect(screen, vivid_orange, self.mute_effects_button, 2)  # Изменяем цвет на (255, 194, 38)
@@ -177,6 +188,7 @@ class SettingsOverlay:
         # пикселей вниз
         screen.blit(mute_effects_text, (400, 215))  # Подвигаем второй ряд
         # на 5 пикселей вниз
+
 
 class SettingsMenu(Scene):
     def __init__(self):
@@ -196,6 +208,7 @@ class SettingsMenu(Scene):
 
     def draw(self, screen):
         self.settings_overlay.draw(screen)
+
 
 class GameScreenState:
     def __init__(self):
@@ -260,7 +273,7 @@ class GameScreenState:
         self.selected_planet = None
 
     def switch_to_planet_screen(self, planet_id):
-        self.current_state = PlanetScreenState(planet_id)
+        self.current_state = PlanetScreenState(self, planet_id)
         self.planet_screen_active = True
 
     def set_click_state(self, state):
@@ -290,6 +303,7 @@ class GameScreenState:
         if self.clicked_on_click_button:
             self.money += self.money_click_increment
             self.clicked_on_click_button = False
+
     def handle_events(self, events):
         for event in events:
             if self.planet_screen_active:
@@ -297,12 +311,16 @@ class GameScreenState:
             else:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.planet_1_rect.collidepoint(event.pos):
+                        self.set_selected_planet(1)
                         self.switch_to_planet_screen(1)
                     elif self.planet_2_rect.collidepoint(event.pos):
+                        self.set_selected_planet(2)
                         self.switch_to_planet_screen(2)
                     elif self.planet_3_rect.collidepoint(event.pos):
+                        self.set_selected_planet(3)
                         self.switch_to_planet_screen(3)
                     elif self.planet_4_rect.collidepoint(event.pos):
+                        self.set_selected_planet(4)
                         self.switch_to_planet_screen(4)
                     elif self.click_button_rect.collidepoint(event.pos):
                         self.clicked_on_click_button = True
@@ -361,7 +379,6 @@ class GameScreenState:
 
         # Отрисовка планет
 
-
         screen.blit(self.planet1_image, (
             self.planet1_x - self.planet1_image.get_width() // 2,
             self.planet1_y - self.planet1_image.get_height() // 2))
@@ -388,10 +405,11 @@ class GameScreenState:
 
 
 class PlanetScreenState:
-    def __init__(self, planet_id):
-        # Добавьте здесь инициализацию для экрана с планетой
+    def __init__(self, game_state, planet_id):
+        self.game_state = game_state
         self.planet_id = planet_id
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
+        # Добавьте здесь инициализацию для экрана с планетой
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)  # Ваши координаты орбиты здесь
 
     def handle_events(self, events):
