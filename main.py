@@ -55,9 +55,10 @@ class GameState:
         return self.selected_planet
 
     def switch_to_planet_screen(self, planet_id):
-        global current_state
-        current_state = PlanetScreenState(planet_id, self)
+        global current_scene
+        # self.current_state = PlanetScreenState(planet_id, self)
         self.planet_screen_active = True
+        current_scene = PlanetScreenState(planet_id, self)
 
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
@@ -506,8 +507,8 @@ class ShopScene(Scene):
         self.shop.purchase_item(item_index)
 
     def go_back(self):
-        global current_state
-        current_state = game_state
+        global current_scene
+        current_scene = game_state
 
     def handle_events(self, events):
         for event in events:
@@ -644,7 +645,7 @@ shop_menu = ShopScene()
 game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
-current_state = game_state
+current_scene = game_state
 
 while running:
     events = pygame.event.get()
@@ -654,22 +655,21 @@ while running:
             running = False
 
     # Обработка событий и переключение сцен
-    result = current_state.handle_events(events)
+    result = current_scene.handle_events(events)
     if result:
-        if current_state == game_state:
+        if current_scene == game_state:
             if result == "settings":
-                current_state = settings_menu
+                current_scene = settings_menu
             elif result == "shop":
-                current_state = shop_menu
-        elif current_state == settings_menu:
+                current_scene = shop_menu
+        elif current_scene == settings_menu:
             if result == "main_menu" or result == "close_settings":
-                current_state = game_state
-    print(current_state)
+                current_scene = game_state
 
-    current_state.update()
+    current_scene.update()
 
     screen.blit(background_image, (0, 0))
-    current_state.draw(screen)
+    current_scene.draw(screen)
 
     pygame.event.pump()
     pygame.display.flip()
