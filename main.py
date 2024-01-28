@@ -59,8 +59,10 @@ class GameState:
         return self.selected_planet
 
     def switch_to_planet_screen(self, planet_id):
-        self.current_state = PlanetScreenState(planet_id, self)
+        global current_scene
+        # self.current_state = PlanetScreenState(planet_id, self)
         self.planet_screen_active = True
+        current_scene = PlanetScreenState(planet_id, self)
 
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
