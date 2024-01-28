@@ -38,6 +38,10 @@ class GameState:
         self.planet_screen_active = False
         self.selected_planet = None
         self.money = 0
+        self.shop = Shop()
+
+    def get_shop(self):
+        return self.shop
 
     def get_money(self):
         return self.money
@@ -400,12 +404,10 @@ class GameScreenState:
             self.planet4_x - self.planet4_image.get_width() // 2,
             self.planet4_y - self.planet4_image.get_height() // 2))
 
-
         '''pygame.draw.rect(screen, white, self.planet_1_rect, 1)
         pygame.draw.rect(screen, white, self.planet_2_rect, 1)
         pygame.draw.rect(screen, white, self.planet_3_rect, 1)
         pygame.draw.rect(screen, white, self.planet_4_rect, 1)'''
-
 
 
 # Класс для кнопок в игре
@@ -472,11 +474,10 @@ class Shop:
             self.money += item.click_value
 
     def purchase_item(self, item_index):
-        if 0 <= item_index < len(self.items):
-            item = self.items[item_index]
-            if self.money >= item.cost:
-                self.money -= item.cost
-                item.upgrade()
+        shop = game_state.get_shop()
+        if game_state.get_money() >= shop.items[item_index].cost:
+            game_state.update_money(-shop.items[item_index].cost)
+            shop.purchase_item(item_index)
 
     def get_shop_info(self):
         shop_info = []
@@ -492,15 +493,17 @@ class ShopScene(Scene):
         super().__init__()
         self.shop = Shop()
         self.shop_buttons = [
-            Button(50, 90 + i * 70, 200, 50, vivid_orange, f"Купить {i+1}", "", action=lambda i=i: self.purchase_item(i))
+            Button(30, 100 + i * 70, 200, 50, vivid_orange, f"Купить {i + 1}", "",
+                   action=lambda i=i: self.purchase_item(i))
             for i in range(len(self.shop.items))
         ]
-        self.exit_button = Button(50, 20, 200, 50, vivid_orange, "Назад", "Вернуться на главный экран", action=self.go_back)
+        self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться на главный экран",
+                                  action=self.go_back)
 
         self.money_color = vivid_orange
         self.money_border_icon = pygame.image.load("data/border.png")
 
-        self.font = pygame.font.SysFont(None, 38)
+        self.font = pygame.font.SysFont(None, 32)
 
     def purchase_item(self, item_index):
         self.shop.purchase_item(item_index)
@@ -526,7 +529,7 @@ class ShopScene(Scene):
         screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (55, height - 115))
-        display_score = self.font.render(f"{round(money, 2)} $", True, vivid_orange)
+        display_score = self.font.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
         screen.blit(display_score, (55, height - 75))
 
         for button in self.shop_buttons:
@@ -536,7 +539,7 @@ class ShopScene(Scene):
         shop_info = self.shop.get_shop_info()
         for i, info in enumerate(shop_info):
             text = self.font.render(info, True, white)
-            rect = text.get_rect(midleft=(300, 50 + i * 70))
+            rect = text.get_rect(midleft=(250, 120 + i * 70))
             screen.blit(text, rect)
 
 
