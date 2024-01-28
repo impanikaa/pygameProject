@@ -22,6 +22,12 @@ class GameState:
     def set_current_state(self, state):
         self.current_state = state
 
+    def set_selected_planet(self, planet):
+        self.selected_planet = planet
+
+    def get_selected_planet(self):
+        return self.selected_planet
+
     def switch_to_planet_screen(self, planet_id):
         self.current_state = PlanetScreenState(planet_id)
         self.planet_screen_active = True
@@ -43,16 +49,20 @@ class GameState:
                 elif self.current_state.setting_button_rect.collidepoint(event.pos):
                     # Добавьте здесь действия для нажатия на кнопку "Настройки"
                     pass
+                elif self.current_state.planet_1_rect.collidepoint(event.pos):
+                    self.set_selected_planet(1)
+                    self.current_state.switch_to_planet_screen(1)
+                elif self.current_state.planet_2_rect.collidepoint(event.pos):
+                    self.set_selected_planet(2)
+                    self.current_state.switch_to_planet_screen(2)
+                elif self.current_state.planet_3_rect.collidepoint(event.pos):
+                    self.set_selected_planet(3)
+                    self.current_state.switch_to_planet_screen(3)
+                elif self.current_state.planet_4_rect.collidepoint(event.pos):
+                    self.set_selected_planet(4)
+                    self.current_state.switch_to_planet_screen(4)
                 elif self.current_state.click_button_rect.collidepoint(event.pos):
                     self.current_state.clicked_on_click_button = True
-                elif self.current_state.orbit_1.collidepoint(event.pos):
-                    self.switch_to_planet_screen(1)
-                elif self.current_state.orbit_2.collidepoint(event.pos):
-                    self.switch_to_planet_screen(2)
-                elif self.current_state.orbit_3.collidepoint(event.pos):
-                    self.switch_to_planet_screen(3)
-                elif self.current_state.orbit_4.collidepoint(event.pos):
-                    self.switch_to_planet_screen(4)
 
     def update(self):
         if self.planet_screen_active:
@@ -95,6 +105,11 @@ class GameScreenState:
 
         self.font_black = pygame.font.SysFont(None, 32)
         self.font_vivid_orange = pygame.font.SysFont(None, 38)
+
+        self.planet_1_rect = pygame.Rect(0, 0, 60, 60)
+        self.planet_2_rect = pygame.Rect(0, 0, 75, 75)
+        self.planet_3_rect = pygame.Rect(0, 0, 55, 55)
+        self.planet_4_rect = pygame.Rect(0, 0, 35, 35)
 
         self.planet1_image = pygame.image.load("data/planet1.png")
         self.planet2_image = pygame.image.load("data/planet2.png")
@@ -159,35 +174,37 @@ class GameScreenState:
             self.clicked_on_click_button = False
 
     def handle_event(self, event):
-        def handle_event(self, event):
-            if self.planet_screen_active:
-                self.current_state.handle_event(event)
-            else:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.click_button_rect.collidepoint(event.pos):
-                        self.clicked_on_click_button = True
-                    elif self.orbit_1.collidepoint(event.pos):
-                        self.switch_to_planet_screen(1)
-                    elif self.orbit_2.collidepoint(event.pos):
-                        self.switch_to_planet_screen(2)
-                    elif self.orbit_3.collidepoint(event.pos):
-                        self.switch_to_planet_screen(3)
-                    elif self.orbit_4.collidepoint(event.pos):
-                        self.switch_to_planet_screen(4)
+        if self.planet_screen_active:
+            self.current_state.handle_event(event)
+        else:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.planet_1_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(1)
+                elif self.planet_2_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(2)
+                elif self.planet_3_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(3)
+                elif self.planet_4_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(4)
+                elif self.click_button_rect.collidepoint(event.pos):
+                    self.clicked_on_click_button = True
 
     def update_planet_positions(self):
-        # Обновление координат планет на орбитах
         self.planet1_x = int(self.orbit_1.centerx + self.orbit_1.width / 2 * math.cos(self.angle_1))
         self.planet1_y = int(self.orbit_1.centery + self.orbit_1.height / 2 * math.sin(self.angle_1))
+        self.planet_1_rect.center = (self.planet1_x, self.planet1_y)
 
         self.planet2_x = int(self.orbit_2.centerx + self.orbit_2.width / 2 * math.cos(self.angle_2))
         self.planet2_y = int(self.orbit_2.centery + self.orbit_2.height / 2 * math.sin(self.angle_2))
+        self.planet_2_rect.center = (self.planet2_x, self.planet2_y)
 
         self.planet3_x = int(self.orbit_3.centerx + self.orbit_3.width / 2 * math.cos(self.angle_3))
         self.planet3_y = int(self.orbit_3.centery + self.orbit_3.height / 2 * math.sin(self.angle_3))
+        self.planet_3_rect.center = (self.planet3_x, self.planet3_y)
 
         self.planet4_x = int(self.orbit_4.centerx + self.orbit_4.width / 2 * math.cos(self.angle_4))
         self.planet4_y = int(self.orbit_4.centery + self.orbit_4.height / 2 * math.sin(self.angle_4))
+        self.planet_4_rect.center = (self.planet4_x, self.planet4_y)
 
     def draw(self, screen):
         pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
@@ -249,7 +266,7 @@ class PlanetScreenState:
     def __init__(self, planet_id):
         # Добавьте здесь инициализацию для экрана с планетой
         self.planet_id = planet_id
-        self.planet_image = pygame.image.load(f"data/planet{planet_id}.png")
+        self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)  # Ваши координаты орбиты здесь
 
     def handle_event(self, event):
@@ -267,8 +284,8 @@ class PlanetScreenState:
         # Отрисовка для экрана с планетой
 
         # Определение координат для отображения текста
-        text_x = 340  # Измените на необходимые вам координаты
-        text_y = 480  # Измените на необходимые вам координаты
+        text_x = 20  # Измените на необходимые вам координаты
+        text_y = 20  # Измените на необходимые вам координаты
 
         # Отображение текста
         text = pygame.font.SysFont(None, 24).render(f"Планета {self.planet_id}", True, text_color)
@@ -298,3 +315,4 @@ while running:
     pygame.display.flip()
     clock.tick(60)
 
+pygame.quit()
