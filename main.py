@@ -226,7 +226,6 @@ class GameScreenState:
         self.setting_button_color = vivid_orange
         self.setting_button_corner_radius = 10
         self.setting_button_icon = pygame.image.load("data/setting.png")
-        self.money = 0
         self.money_color = vivid_orange
         self.money_border_icon = pygame.image.load("data/border.png")
 
@@ -323,8 +322,9 @@ class GameScreenState:
                     elif self.planet_4_rect.collidepoint(event.pos):
                         self.set_selected_planet(4)
                         self.switch_to_planet_screen(4)
-                    elif self.click_button_rect.collidepoint(event.pos):
-                        self.clicked_on_click_button = True
+                    elif self.current_state.click_button_rect.collidepoint(event.pos):
+                        self.set_click_state(True)
+                        self.current_state.clicked_on_click_button = True
 
     def update_planet_positions(self):
         self.planet1_x = int(self.orbit_1.centerx + self.orbit_1.width / 2 * math.cos(self.angle_1))
@@ -412,7 +412,6 @@ class PlanetScreenState:
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)
 
         # Кнопки и счет
-        self.money = 0
         self.money_color = vivid_orange
         self.money_border_icon = pygame.image.load("data/border.png")
 
@@ -422,6 +421,11 @@ class PlanetScreenState:
 
         self.font_black = pygame.font.SysFont(None, 32)
         self.font_vivid_orange = pygame.font.SysFont(None, 38)
+
+        self.return_button_rect = pygame.Rect(30, 20, 65, 65)
+        self.return_button_color = vivid_orange
+        self.return_button_corner_radius = 10
+        self.return_button_icon = pygame.image.load("data/back.png")
 
         self.shop_button_rect = pygame.Rect(110, 20, 200, 65)
         self.shop_button_color = vivid_orange
@@ -444,14 +448,21 @@ class PlanetScreenState:
 
     def handle_events(self, events):
         for event in events:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.click_button_rect.collidepoint(event.pos):
-                    print("Кнопка 'Клик' была нажата")
-                    self.clicked_on_click_button = True
-                elif self.game_state.setting_button_rect.collidepoint(event.pos):
-                    return "settings"
-                elif self.click_button_rect.collidepoint(event.pos):
-                    self.clicked_on_click_button = True
+            if self.planet_screen_active:
+                pass
+                # self.current_state.handle_events(event)
+            else:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.return_button_rect.collidepoint(event.pos):
+                        return "return_to_main_menu"
+                    elif self.game_state.setting_button_rect.collidepoint(event.pos):
+                        return "settings"
+                    elif self.current_state.click_button_rect.collidepoint(event.pos):
+                        self.set_click_state(True)
+                        self.current_state.clicked_on_click_button = True
+
+    def set_click_state(self, state):
+        self.clicked_on_click_button = state
 
     def update(self):
         # Обновление времени
@@ -463,7 +474,7 @@ class PlanetScreenState:
 
         # Обновление money при клике
         if self.clicked_on_click_button:
-            self.game_state.update_money(self.money_click_increment)
+            game_state.update_money(self.money_click_increment)
             self.clicked_on_click_button = False
 
     def draw(self, screen):
@@ -496,6 +507,13 @@ class PlanetScreenState:
         text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
         screen.blit(text_click, text_click_rect)
 
+        # Отрисовка кнопки возврата
+        pygame.draw.rect(screen, self.return_button_color, self.return_button_rect,
+                         border_radius=self.return_button_corner_radius)
+        screen.blit(self.return_button_icon, (
+            self.return_button_rect.centerx - self.return_button_icon.get_width() // 2,
+            self.return_button_rect.centery - self.return_button_icon.get_height() // 2))
+
         # Отрисовка счета
         screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
@@ -506,6 +524,7 @@ class PlanetScreenState:
 
 game_state = GameState()
 settings_menu = SettingsMenu()
+planet_screen_state = PlanetScreenState(1, game_state)
 clock = pygame.time.Clock()
 current_scene = game_state
 
@@ -513,10 +532,13 @@ while running:
     events = pygame.event.get()
 
     for event in events:
-        if event.type == pygame.QUIT:
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            print(f"Mouse click at {event.pos}")
+        elif event.type == pygame.KEYDOWN:
+            print(f"Key pressed: {event.key}")
+        elif event.type == pygame.QUIT:
             running = False
 
-    # Обработка событий и переключение сцен
     result = current_scene.handle_events(events)
     if result:
         if current_scene == game_state:
@@ -525,9 +547,11 @@ while running:
         elif current_scene == settings_menu:
             if result == "main_menu" or result == "close_settings":
                 current_scene = game_state
+        elif current_scene == planet_screen_state:
+            if result == "return_to_main_menu":
+                current_scene = game_state
 
     current_scene.update()
-
     screen.blit(background_image, (0, 0))
     current_scene.draw(screen)
 
