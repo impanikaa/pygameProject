@@ -17,10 +17,17 @@ class GameState:
     def __init__(self):
         self.current_state = GameScreenState()
         self.planet_screen_active = False
+        self.selected_planet = None
 
-    def switch_to_planet_screen(self):
-        self.current_state = PlanetScreenState()
+    def set_current_state(self, state):
+        self.current_state = state
+
+    def switch_to_planet_screen(self, planet_id):
+        self.current_state = PlanetScreenState(planet_id)
         self.planet_screen_active = True
+
+    def set_click_state(self, state):
+        self.current_state.set_click_state(state)
 
     def handle_event(self, event):
         if self.planet_screen_active:
@@ -37,8 +44,15 @@ class GameState:
                     # Добавьте здесь действия для нажатия на кнопку "Настройки"
                     pass
                 elif self.current_state.click_button_rect.collidepoint(event.pos):
-                    # Добавьте здесь действия для нажатия на кнопку "Клик"
-                    pass
+                    self.current_state.clicked_on_click_button = True
+                elif self.current_state.orbit_1.collidepoint(event.pos):
+                    self.switch_to_planet_screen(1)
+                elif self.current_state.orbit_2.collidepoint(event.pos):
+                    self.switch_to_planet_screen(2)
+                elif self.current_state.orbit_3.collidepoint(event.pos):
+                    self.switch_to_planet_screen(3)
+                elif self.current_state.orbit_4.collidepoint(event.pos):
+                    self.switch_to_planet_screen(4)
 
     def update(self):
         if self.planet_screen_active:
@@ -110,6 +124,18 @@ class GameScreenState:
         self.last_money_update_time = pygame.time.get_ticks()
         self.money_click_increment = 1
 
+        self.selected_planet = None
+
+    def switch_to_planet_screen(self, planet_id):
+        self.current_state = PlanetScreenState(planet_id)
+        self.planet_screen_active = True
+
+    def set_click_state(self, state):
+        self.clicked_on_click_button = state
+
+    def set_selected_planet(self, planet):
+        self.selected_planet = planet
+
     def update(self):
         # Обновление времени
         current_time = pygame.time.get_ticks()
@@ -133,9 +159,21 @@ class GameScreenState:
             self.clicked_on_click_button = False
 
     def handle_event(self, event):
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.click_button_rect.collidepoint(event.pos):
-                self.clicked_on_click_button = True
+        def handle_event(self, event):
+            if self.planet_screen_active:
+                self.current_state.handle_event(event)
+            else:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.click_button_rect.collidepoint(event.pos):
+                        self.clicked_on_click_button = True
+                    elif self.orbit_1.collidepoint(event.pos):
+                        self.switch_to_planet_screen(1)
+                    elif self.orbit_2.collidepoint(event.pos):
+                        self.switch_to_planet_screen(2)
+                    elif self.orbit_3.collidepoint(event.pos):
+                        self.switch_to_planet_screen(3)
+                    elif self.orbit_4.collidepoint(event.pos):
+                        self.switch_to_planet_screen(4)
 
     def update_planet_positions(self):
         # Обновление координат планет на орбитах
@@ -208,10 +246,11 @@ class GameScreenState:
 
 
 class PlanetScreenState:
-    def __init__(self):
+    def __init__(self, planet_id):
         # Добавьте здесь инициализацию для экрана с планетой
-        self.planet_image = pygame.image.load("data/planet1.png")
-        self.orbit_rect = pygame.Rect(280, 75, 450, 450)
+        self.planet_id = planet_id
+        self.planet_image = pygame.image.load(f"data/planet{planet_id}.png")
+        self.orbit_rect = pygame.Rect(0, 0, 0, 0)  # Ваши координаты орбиты здесь
 
     def handle_event(self, event):
         # Обработка событий для экрана с планетой
@@ -226,24 +265,36 @@ class PlanetScreenState:
 
     def draw(self, screen):
         # Отрисовка для экрана с планетой
-        pygame.draw.ellipse(screen, white, self.orbit_rect, 1)
-        screen.blit(self.planet_image, (self.orbit_rect.centerx - self.planet_image.get_width() // 2,
-                                        self.orbit_rect.centery - self.planet_image.get_height() // 2))
+
+        # Определение координат для отображения текста
+        text_x = 340  # Измените на необходимые вам координаты
+        text_y = 480  # Измените на необходимые вам координаты
+
+        # Отображение текста
+        text = pygame.font.SysFont(None, 24).render(f"Планета {self.planet_id}", True, text_color)
+        screen.blit(text, (text_x, text_y))
+
+        # Отображение изображения планеты
+        planet_x = 340  # Измените на необходимые вам координаты
+        planet_y = 125  # Измените на необходимые вам координаты
+
+        screen.blit(self.planet_image, (planet_x, planet_y))
 
 
-game = GameScreenState()
+game_state = GameState()
 clock = pygame.time.Clock()
 
 while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        game.handle_event(event)
+        game_state.handle_event(event)
 
-    game.update()
+    game_state.update()
 
     screen.blit(background_image, (0, 0))
-    game.draw(screen)
+    game_state.draw(screen)
 
     pygame.display.flip()
     clock.tick(60)
+
