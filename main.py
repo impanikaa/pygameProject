@@ -55,36 +55,32 @@ class GameState:
 
     def handle_events(self, events):
         for event in events:
-            if self.planet_screen_active:
-                pass
-                # self.current_state.handle_events(event)
-            else:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.current_state.shop_button_rect.collidepoint(event.pos):
-                        # Добавьте здесь действия для нажатия на кнопку "Магазин"
-                        pass
-                    elif self.current_state.help_button_rect.collidepoint(event.pos):
-                        # Добавьте здесь действия для нажатия на кнопку "Помощь"
-                        pass
-                    elif self.current_state.setting_button_rect.collidepoint(event.pos):
-                        # Добавьте здесь действия для нажатия на кнопку "Настройки"
-                        return "settings"
-                    elif self.current_state.planet_1_rect.collidepoint(event.pos):
-                        self.set_selected_planet(1)
-                        self.switch_to_planet_screen(1)
-                    elif self.current_state.planet_2_rect.collidepoint(event.pos):
-                        self.set_selected_planet(2)
-                        self.switch_to_planet_screen(2)
-                    elif self.current_state.planet_3_rect.collidepoint(event.pos):
-                        self.set_selected_planet(3)
-                        self.switch_to_planet_screen(3)
-                    elif self.current_state.planet_4_rect.collidepoint(event.pos):
-                        self.set_selected_planet(4)
-                        self.switch_to_planet_screen(4)
-                    elif self.current_state.click_button_rect.collidepoint(event.pos):
-                        self.set_click_state(True)
-                    elif self.current_state.click_button_rect.collidepoint(event.pos):
-                        self.current_state.clicked_on_click_button = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.current_state.shop_button_rect.collidepoint(event.pos):
+                    # Добавьте здесь действия для нажатия на кнопку "Магазин"
+                    pass
+                elif self.current_state.help_button_rect.collidepoint(event.pos):
+                    # Добавьте здесь действия для нажатия на кнопку "Помощь"
+                    pass
+                elif self.current_state.setting_button_rect.collidepoint(event.pos):
+                    # Добавьте здесь действия для нажатия на кнопку "Настройки"
+                    return "settings"
+                elif self.current_state.planet_1_rect.collidepoint(event.pos):
+                    self.set_selected_planet(1)
+                    self.switch_to_planet_screen(1)
+                elif self.current_state.planet_2_rect.collidepoint(event.pos):
+                    self.set_selected_planet(2)
+                    self.switch_to_planet_screen(2)
+                elif self.current_state.planet_3_rect.collidepoint(event.pos):
+                    self.set_selected_planet(3)
+                    self.switch_to_planet_screen(3)
+                elif self.current_state.planet_4_rect.collidepoint(event.pos):
+                    self.set_selected_planet(4)
+                    self.switch_to_planet_screen(4)
+                elif self.current_state.click_button_rect.collidepoint(event.pos):
+                    self.set_click_state(True)
+                elif self.current_state.click_button_rect.collidepoint(event.pos):
+                    self.current_state.clicked_on_click_button = True
 
     def update(self):
         if self.planet_screen_active:
@@ -295,20 +291,17 @@ class GameScreenState:
 
     def handle_events(self, events):
         for event in events:
-            if self.planet_screen_active:
-                self.current_state.handle_events(event)
-            else:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.planet_1_rect.collidepoint(event.pos):
-                        self.switch_to_planet_screen(1)
-                    elif self.planet_2_rect.collidepoint(event.pos):
-                        self.switch_to_planet_screen(2)
-                    elif self.planet_3_rect.collidepoint(event.pos):
-                        self.switch_to_planet_screen(3)
-                    elif self.planet_4_rect.collidepoint(event.pos):
-                        self.switch_to_planet_screen(4)
-                    elif self.click_button_rect.collidepoint(event.pos):
-                        self.clicked_on_click_button = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.planet_1_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(1)
+                elif self.planet_2_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(2)
+                elif self.planet_3_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(3)
+                elif self.planet_4_rect.collidepoint(event.pos):
+                    self.switch_to_planet_screen(4)
+                elif self.click_button_rect.collidepoint(event.pos):
+                    self.clicked_on_click_button = True
 
     def update_planet_positions(self):
         self.planet1_x = int(self.orbit_1.centerx + self.orbit_1.width / 2 * math.cos(self.angle_1))
