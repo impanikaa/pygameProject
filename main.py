@@ -38,6 +38,10 @@ angular_speed_2 = 0.0002
 angular_speed_3 = 0.00035
 angular_speed_4 = 0.0005
 
+click_button_rect = pygame.Rect(715, 420, 160, 160)
+click_button_color = (255, 194, 38)
+click_button_corner_radius = click_button_rect.width // 2
+
 text_color = (0, 2, 18)
 font = pygame.font.SysFont(None, 32)
 
@@ -92,6 +96,12 @@ while running:
     pygame.draw.ellipse(screen, (255, 255, 255), orbit_2, 1)
     pygame.draw.ellipse(screen, (255, 255, 255), orbit_3, 1)
     pygame.draw.ellipse(screen, (255, 255, 255), orbit_4, 1)
+
+    # Отрисовка круглой кнопки "Клик"
+    pygame.draw.circle(screen, click_button_color, click_button_rect.center, click_button_corner_radius)
+    text_click = font.render("Клик", True, text_color)
+    text_click_rect = text_click.get_rect(center=click_button_rect.center)
+    screen.blit(text_click, text_click_rect)
 
     pygame.display.flip()
     clock.tick(60)
