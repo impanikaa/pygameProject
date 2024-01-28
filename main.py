@@ -35,6 +35,13 @@ class GameState:
         self.current_state = GameScreenState()
         self.planet_screen_active = False
         self.selected_planet = None
+        self.money = 0
+
+    def get_money(self):
+        return self.money
+
+    def update_money(self, amount):
+        self.money += amount
 
     def set_current_state(self, state):
         self.current_state = state
@@ -46,16 +53,19 @@ class GameState:
         return self.selected_planet
 
     def switch_to_planet_screen(self, planet_id):
-        self.current_state = PlanetScreenState(planet_id)
+        self.current_state = PlanetScreenState(planet_id, self)
         self.planet_screen_active = True
 
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
 
+    # def switch_to_settings(self):
+
     def handle_events(self, events):
         for event in events:
             if self.planet_screen_active:
-                self.current_state.handle_events(event)
+                pass
+                # self.current_state.handle_events(event)
             else:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state.shop_button_rect.collidepoint(event.pos):
@@ -181,6 +191,7 @@ class SettingsOverlay:
         screen.blit(mute_music_text, (500, 130))
         screen.blit(mute_effects_text, (500, 215))
 
+
 class SettingsMenu(Scene):
     def __init__(self):
         super().__init__()
@@ -291,7 +302,7 @@ class GameScreenState:
 
         # Обновление money при клике
         if self.clicked_on_click_button:
-            self.money += self.money_click_increment
+            game_state.update_money(self.money_click_increment)
             self.clicked_on_click_button = False
 
     def handle_events(self, events):
@@ -361,14 +372,13 @@ class GameScreenState:
         screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (55, height - 115))
-        display_score = self.font_vivid_orange.render(f"{round(self.money, 2)} $", True, vivid_orange)
+        display_score = self.font_vivid_orange.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
         screen.blit(display_score, (55, height - 75))
 
         # Обновление углов планет
         self.update()
 
         # Отрисовка планет
-
         screen.blit(self.planet1_image, (
             self.planet1_x - self.planet1_image.get_width() // 2,
             self.planet1_y - self.planet1_image.get_height() // 2))
@@ -395,41 +405,103 @@ class GameScreenState:
 
 
 class PlanetScreenState:
-    def __init__(self, game_state, planet_id):
-        self.game_state = game_state
+    def __init__(self, planet_id, current_state):
         self.planet_id = planet_id
+        self.game_state = current_state
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
-        # Добавьте здесь инициализацию для экрана с планетой
-        self.orbit_rect = pygame.Rect(0, 0, 0, 0)  # Ваши координаты орбиты здесь
+        self.orbit_rect = pygame.Rect(0, 0, 0, 0)
+
+        # Кнопки и счет
+        self.money = 0
+        self.money_color = vivid_orange
+        self.money_border_icon = pygame.image.load("data/border.png")
+
+        self.money_update_interval = 1000
+        self.last_money_update_time = pygame.time.get_ticks()
+        self.money_click_increment = 1
+
+        self.font_black = pygame.font.SysFont(None, 32)
+        self.font_vivid_orange = pygame.font.SysFont(None, 38)
+
+        self.shop_button_rect = pygame.Rect(110, 20, 200, 65)
+        self.shop_button_color = vivid_orange
+        self.shop_button_corner_radius = 10
+
+        self.help_button_rect = pygame.Rect(730, 20, 65, 65)
+        self.help_button_color = vivid_orange
+        self.help_button_corner_radius = 10
+        self.help_button_icon = pygame.image.load("data/help.png")
+
+        self.setting_button_rect = pygame.Rect(810, 20, 65, 65)
+        self.setting_button_color = vivid_orange
+        self.setting_button_corner_radius = 10
+        self.setting_button_icon = pygame.image.load("data/setting.png")
+
+        self.click_button_rect = pygame.Rect(715, 420, 160, 160)
+        self.click_button_color = vivid_orange
+        self.click_button_corner_radius = self.click_button_rect.width // 2
+        self.clicked_on_click_button = False
 
     def handle_events(self, events):
         for event in events:
-            # Обработка событий для экрана с планетой
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.orbit_rect.collidepoint(event.pos):
-                    # Здесь вы можете выполнить действия, связанные с нажатием на планету
-                    pass
+                if self.click_button_rect.collidepoint(event.pos):
+                    print("Кнопка 'Клик' была нажата")
+                    self.clicked_on_click_button = True
+                elif self.game_state.setting_button_rect.collidepoint(event.pos):
+                    return "settings"
+                elif self.click_button_rect.collidepoint(event.pos):
+                    self.clicked_on_click_button = True
 
     def update(self):
-        # Логика обновления для экрана с планетой
-        pass
+        # Обновление времени
+        current_time = pygame.time.get_ticks()
+
+        # Обновление текста каждую секунду
+        if current_time - self.last_money_update_time >= self.money_update_interval:
+            self.last_money_update_time = current_time
+
+        # Обновление money при клике
+        if self.clicked_on_click_button:
+            self.game_state.update_money(self.money_click_increment)
+            self.clicked_on_click_button = False
 
     def draw(self, screen):
-        # Отрисовка для экрана с планетой
-
-        # Определение координат для отображения текста
-        text_x = 20  # Измените на необходимые вам координаты
-        text_y = 20  # Измените на необходимые вам координаты
-
-        # Отображение текста
-        text = pygame.font.SysFont(None, 24).render(f"Планета {self.planet_id}", True, space_color)
-        screen.blit(text, (text_x, text_y))
-
-        # Отображение изображения планеты
-        planet_x = 340  # Измените на необходимые вам координаты
-        planet_y = 125  # Измените на необходимые вам координаты
+        planet_x = 340
+        planet_y = 125
 
         screen.blit(self.planet_image, (planet_x, planet_y))
+
+        pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
+                         border_radius=self.shop_button_corner_radius)
+        text1 = self.font_black.render("Магазин", True, space_color)
+        text1_rect = text1.get_rect(center=self.shop_button_rect.center)
+        screen.blit(text1, text1_rect)
+
+        pygame.draw.rect(screen, self.help_button_color, self.help_button_rect,
+                         border_radius=self.help_button_corner_radius)
+        screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2,
+                                            self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
+
+        pygame.draw.rect(screen, self.setting_button_color, self.setting_button_rect,
+                         border_radius=self.setting_button_corner_radius)
+        screen.blit(self.setting_button_icon, (
+            self.setting_button_rect.centerx - self.setting_button_icon.get_width() // 2,
+            self.setting_button_rect.centery - self.setting_button_icon.get_height() // 2))
+
+        # Отрисовка круглой кнопки "Клик"
+        pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
+                           self.click_button_corner_radius)
+        text_click = pygame.font.SysFont(None, 32).render("Клик", True, space_color)
+        text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
+        screen.blit(text_click, text_click_rect)
+
+        # Отрисовка счета
+        screen.blit(self.money_border_icon, (30, height - 140))
+        text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
+        screen.blit(text_money, (55, height - 115))
+        display_score = self.font_vivid_orange.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
+        screen.blit(display_score, (55, height - 75))
 
 
 game_state = GameState()
