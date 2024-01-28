@@ -67,18 +67,19 @@ class GameState:
                         # Добавьте здесь действия для нажатия на кнопку "Настройки"
                         return "settings"
                     elif self.current_state.planet_1_rect.collidepoint(event.pos):
-                        print(1)
                         self.set_selected_planet(1)
-                        self.current_state.switch_to_planet_screen(1)
+                        self.switch_to_planet_screen(1)
                     elif self.current_state.planet_2_rect.collidepoint(event.pos):
                         self.set_selected_planet(2)
-                        self.current_state.switch_to_planet_screen(2)
+                        self.switch_to_planet_screen(2)
                     elif self.current_state.planet_3_rect.collidepoint(event.pos):
                         self.set_selected_planet(3)
-                        self.current_state.switch_to_planet_screen(3)
+                        self.switch_to_planet_screen(3)
                     elif self.current_state.planet_4_rect.collidepoint(event.pos):
                         self.set_selected_planet(4)
-                        self.current_state.switch_to_planet_screen(4)
+                        self.switch_to_planet_screen(4)
+                    elif self.current_state.click_button_rect.collidepoint(event.pos):
+                        self.set_click_state(True)
                     elif self.current_state.click_button_rect.collidepoint(event.pos):
                         self.current_state.clicked_on_click_button = True
 
