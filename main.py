@@ -289,7 +289,6 @@ class GameScreenState:
         if self.clicked_on_click_button:
             self.money += self.money_click_increment
             self.clicked_on_click_button = False
-
     def handle_events(self, events):
         for event in events:
             if self.planet_screen_active:
@@ -356,16 +355,12 @@ class GameScreenState:
         display_score = self.font_vivid_orange.render(f"{round(self.money, 2)} $", True, vivid_orange)
         screen.blit(display_score, (55, height - 75))
 
-        # Отрисовка орбит
-        pygame.draw.ellipse(screen, white, self.orbit_1, 1)
-        pygame.draw.ellipse(screen, white, self.orbit_2, 1)
-        pygame.draw.ellipse(screen, white, self.orbit_3, 1)
-        pygame.draw.ellipse(screen, white, self.orbit_4, 1)
-
         # Обновление углов планет
         self.update()
 
         # Отрисовка планет
+
+
         screen.blit(self.planet1_image, (
             self.planet1_x - self.planet1_image.get_width() // 2,
             self.planet1_y - self.planet1_image.get_height() // 2))
@@ -378,6 +373,17 @@ class GameScreenState:
         screen.blit(self.planet4_image, (
             self.planet4_x - self.planet4_image.get_width() // 2,
             self.planet4_y - self.planet4_image.get_height() // 2))
+
+        # Отрисовка орбит
+        pygame.draw.ellipse(screen, white, self.orbit_1, 1)
+        pygame.draw.ellipse(screen, white, self.orbit_2, 1)
+        pygame.draw.ellipse(screen, white, self.orbit_3, 1)
+        pygame.draw.ellipse(screen, white, self.orbit_4, 1)
+
+        pygame.draw.rect(screen, white, self.planet_1_rect, 1)
+        pygame.draw.rect(screen, white, self.planet_2_rect, 1)
+        pygame.draw.rect(screen, white, self.planet_3_rect, 1)
+        pygame.draw.rect(screen, white, self.planet_4_rect, 1)
 
 
 class PlanetScreenState:
@@ -444,6 +450,7 @@ while running:
     screen.blit(background_image, (0, 0))
     current_scene.draw(screen)
 
+    pygame.event.pump()
     pygame.display.flip()
     clock.tick(60)
 
