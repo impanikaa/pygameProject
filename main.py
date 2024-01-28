@@ -12,6 +12,7 @@ vivid_orange = (255, 194, 38)
 white = (255, 255, 255)
 text_color = (0, 2, 18)
 
+
 class GameState:
     def __init__(self):
         self.current_state = GameScreenState()
@@ -53,6 +54,7 @@ class GameState:
             # Добавьте отрисовку для главного экрана, если необходимо
             self.current_state.draw(screen)
 
+
 class GameScreenState:
     def __init__(self):
         self.shop_button_rect = pygame.Rect(30, 20, 200, 65)
@@ -68,7 +70,6 @@ class GameScreenState:
         self.setting_button_color = vivid_orange
         self.setting_button_corner_radius = 10
         self.setting_button_icon = pygame.image.load("data/setting.png")
-
         self.money = 0
         self.money_color = vivid_orange
         self.money_border_icon = pygame.image.load("data/border.png")
@@ -76,6 +77,7 @@ class GameScreenState:
         self.click_button_rect = pygame.Rect(715, 420, 160, 160)
         self.click_button_color = vivid_orange
         self.click_button_corner_radius = self.click_button_rect.width // 2
+        self.clicked_on_click_button = False
 
         self.font_black = pygame.font.SysFont(None, 32)
         self.font_vivid_orange = pygame.font.SysFont(None, 38)
@@ -104,8 +106,9 @@ class GameScreenState:
         # Установка начальных координат для планет
         self.update_planet_positions()
 
-    def handle_event(self, event):
-        pass  # Здесь вы можете добавить обработку событий, если это необходимо
+        self.money_update_interval = 1000
+        self.last_money_update_time = pygame.time.get_ticks()
+        self.money_click_increment = 1
 
     def update(self):
         # Обновление времени
@@ -119,6 +122,20 @@ class GameScreenState:
 
         # Обновление координат планет на орбитах
         self.update_planet_positions()
+
+        # Обновление текста каждую секунду
+        if current_time - self.last_money_update_time >= self.money_update_interval:
+            self.last_money_update_time = current_time
+
+        # Обновление money при клике
+        if self.clicked_on_click_button:
+            self.money += self.money_click_increment
+            self.clicked_on_click_button = False
+
+    def handle_event(self, event):
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if self.click_button_rect.collidepoint(event.pos):
+                self.clicked_on_click_button = True
 
     def update_planet_positions(self):
         # Обновление координат планет на орбитах
@@ -134,22 +151,28 @@ class GameScreenState:
         self.planet4_x = int(self.orbit_4.centerx + self.orbit_4.width / 2 * math.cos(self.angle_4))
         self.planet4_y = int(self.orbit_4.centery + self.orbit_4.height / 2 * math.sin(self.angle_4))
 
-
     def draw(self, screen):
-        pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect, border_radius=self.shop_button_corner_radius)
+        pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
+                         border_radius=self.shop_button_corner_radius)
         text1 = self.font_black.render("Магазин", True, text_color)
         text1_rect = text1.get_rect(center=self.shop_button_rect.center)
         screen.blit(text1, text1_rect)
 
-        pygame.draw.rect(screen, self.help_button_color, self.help_button_rect, border_radius=self.help_button_corner_radius)
-        screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2, self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
+        pygame.draw.rect(screen, self.help_button_color, self.help_button_rect,
+                         border_radius=self.help_button_corner_radius)
+        screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2,
+                                            self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
 
-        pygame.draw.rect(screen, self.setting_button_color, self.setting_button_rect, border_radius=self.setting_button_corner_radius)
-        screen.blit(self.setting_button_icon, (self.setting_button_rect.centerx - self.setting_button_icon.get_width() // 2, self.setting_button_rect.centery - self.setting_button_icon.get_height() // 2))
+        pygame.draw.rect(screen, self.setting_button_color, self.setting_button_rect,
+                         border_radius=self.setting_button_corner_radius)
+        screen.blit(self.setting_button_icon, (
+            self.setting_button_rect.centerx - self.setting_button_icon.get_width() // 2,
+            self.setting_button_rect.centery - self.setting_button_icon.get_height() // 2))
 
         # Отрисовка круглой кнопки "Клик"
-        pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center, self.click_button_corner_radius)
-        text_click = self.font_black.render("Клик", True, text_color)
+        pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
+                           self.click_button_corner_radius)
+        text_click = pygame.font.SysFont(None, 32).render("Клик", True, text_color)
         text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
         screen.blit(text_click, text_click_rect)
 
@@ -157,7 +180,7 @@ class GameScreenState:
         screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (55, height - 115))
-        display_score = self.font_vivid_orange.render(str(round(self.money, 2)), True, vivid_orange)
+        display_score = self.font_vivid_orange.render(f"{round(self.money, 2)} $", True, vivid_orange)
         screen.blit(display_score, (55, height - 75))
 
         # Отрисовка орбит
@@ -170,10 +193,18 @@ class GameScreenState:
         self.update()
 
         # Отрисовка планет
-        screen.blit(self.planet1_image, (self.planet1_x - self.planet1_image.get_width() // 2, self.planet1_y - self.planet1_image.get_height() // 2))
-        screen.blit(self.planet2_image, (self.planet2_x - self.planet2_image.get_width() // 2, self.planet2_y - self.planet2_image.get_height() // 2))
-        screen.blit(self.planet3_image, (self.planet3_x - self.planet3_image.get_width() // 2, self.planet3_y - self.planet3_image.get_height() // 2))
-        screen.blit(self.planet4_image, (self.planet4_x - self.planet4_image.get_width() // 2, self.planet4_y - self.planet4_image.get_height() // 2))
+        screen.blit(self.planet1_image, (
+            self.planet1_x - self.planet1_image.get_width() // 2,
+            self.planet1_y - self.planet1_image.get_height() // 2))
+        screen.blit(self.planet2_image, (
+            self.planet2_x - self.planet2_image.get_width() // 2,
+            self.planet2_y - self.planet2_image.get_height() // 2))
+        screen.blit(self.planet3_image, (
+            self.planet3_x - self.planet3_image.get_width() // 2,
+            self.planet3_y - self.planet3_image.get_height() // 2))
+        screen.blit(self.planet4_image, (
+            self.planet4_x - self.planet4_image.get_width() // 2,
+            self.planet4_y - self.planet4_image.get_height() // 2))
 
 
 class PlanetScreenState:
@@ -196,9 +227,11 @@ class PlanetScreenState:
     def draw(self, screen):
         # Отрисовка для экрана с планетой
         pygame.draw.ellipse(screen, white, self.orbit_rect, 1)
-        screen.blit(self.planet_image, (self.orbit_rect.centerx - self.planet_image.get_width() // 2, self.orbit_rect.centery - self.planet_image.get_height() // 2))
+        screen.blit(self.planet_image, (self.orbit_rect.centerx - self.planet_image.get_width() // 2,
+                                        self.orbit_rect.centery - self.planet_image.get_height() // 2))
 
-game = GameState()
+
+game = GameScreenState()
 clock = pygame.time.Clock()
 
 while running:
@@ -207,15 +240,10 @@ while running:
             running = False
         game.handle_event(event)
 
-    # Обновление состояния игры
     game.update()
 
     screen.blit(background_image, (0, 0))
-
-    # Отрисовка состояния игры
     game.draw(screen)
 
     pygame.display.flip()
     clock.tick(60)
-
-pygame.quit()
