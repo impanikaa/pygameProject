@@ -55,6 +55,12 @@ while running:
 
     screen.blit(background_image, (0, 0))
 
+    # Отрисовка орбит
+    pygame.draw.ellipse(screen, (255, 255, 255), orbit_1, 1)
+    pygame.draw.ellipse(screen, (255, 255, 255), orbit_2, 1)
+    pygame.draw.ellipse(screen, (255, 255, 255), orbit_3, 1)
+    pygame.draw.ellipse(screen, (255, 255, 255), orbit_4, 1)
+
     # Обновление углов планет
     angle_1 = pygame.time.get_ticks() * angular_speed_1
     angle_2 = pygame.time.get_ticks() * angular_speed_2
@@ -90,12 +96,6 @@ while running:
 
     pygame.draw.rect(screen, setting_button_color, setting_button_rect, border_radius=setting_button_corner_radius)
     screen.blit(setting_button_icon, (setting_button_rect.centerx - setting_button_icon.get_width() // 2, setting_button_rect.centery - setting_button_icon.get_height() // 2))
-
-    # Отрисовка орбит
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_1, 1)
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_2, 1)
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_3, 1)
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_4, 1)
 
     # Отрисовка круглой кнопки "Клик"
     pygame.draw.circle(screen, click_button_color, click_button_rect.center, click_button_corner_radius)
