@@ -55,7 +55,8 @@ class GameState:
         return self.selected_planet
 
     def switch_to_planet_screen(self, planet_id):
-        self.current_state = PlanetScreenState(planet_id, self)
+        global current_state
+        current_state = PlanetScreenState(planet_id, self)
         self.planet_screen_active = True
 
     def set_click_state(self, state):
@@ -407,7 +408,6 @@ class GameScreenState:
         pygame.draw.rect(screen, white, self.planet_4_rect, 1)'''
 
 
-
 # Класс для кнопок в игре
 class Button:
     def __init__(self, x, y, width, height, color, text, info_text, action=None):
@@ -506,8 +506,8 @@ class ShopScene(Scene):
         self.shop.purchase_item(item_index)
 
     def go_back(self):
-        global current_scene
-        current_scene = game_state
+        global current_state
+        current_state = game_state
 
     def handle_events(self, events):
         for event in events:
@@ -644,7 +644,7 @@ shop_menu = ShopScene()
 game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
-current_scene = game_state
+current_state = game_state
 
 while running:
     events = pygame.event.get()
@@ -654,21 +654,22 @@ while running:
             running = False
 
     # Обработка событий и переключение сцен
-    result = current_scene.handle_events(events)
+    result = current_state.handle_events(events)
     if result:
-        if current_scene == game_state:
+        if current_state == game_state:
             if result == "settings":
-                current_scene = settings_menu
+                current_state = settings_menu
             elif result == "shop":
-                current_scene = shop_menu
-        elif current_scene == settings_menu:
+                current_state = shop_menu
+        elif current_state == settings_menu:
             if result == "main_menu" or result == "close_settings":
-                current_scene = game_state
+                current_state = game_state
+    print(current_state)
 
-    current_scene.update()
+    current_state.update()
 
     screen.blit(background_image, (0, 0))
-    current_scene.draw(screen)
+    current_state.draw(screen)
 
     pygame.event.pump()
     pygame.display.flip()
