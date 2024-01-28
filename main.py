@@ -7,19 +7,28 @@ screen = pygame.display.set_mode((width, height))
 
 background_image = pygame.image.load("data/background.png")
 
+# библиотека цветов
+vivid_orange = (255, 194, 38)
+white = (255, 255, 255)
+text_color = (0, 2, 18)
+
 shop_button_rect = pygame.Rect(30, 20, 200, 65)
-shop_button_color = (255, 194, 38)
+shop_button_color = vivid_orange
 shop_button_corner_radius = 10
 
 help_button_rect = pygame.Rect(730, 20, 65, 65)
-help_button_color = (255, 194, 38)
+help_button_color = vivid_orange
 help_button_corner_radius = 10
 help_button_icon = pygame.image.load("data/help.png")
 
 setting_button_rect = pygame.Rect(810, 20, 65, 65)
-setting_button_color = (255, 194, 38)
+setting_button_color = vivid_orange
 setting_button_corner_radius = 10
 setting_button_icon = pygame.image.load("data/setting.png")
+
+money = 0
+money_color = vivid_orange
+money_border_icon = pygame.image.load("data/border.png")
 
 planet1_image = pygame.image.load("data/planet1.png")
 planet2_image = pygame.image.load("data/planet2.png")
@@ -39,11 +48,26 @@ angular_speed_3 = 0.00035
 angular_speed_4 = 0.0005
 
 click_button_rect = pygame.Rect(715, 420, 160, 160)
-click_button_color = (255, 194, 38)
+click_button_color = vivid_orange
 click_button_corner_radius = click_button_rect.width // 2
 
-text_color = (0, 2, 18)
-font = pygame.font.SysFont(None, 32)
+font_black = pygame.font.SysFont(None, 32)
+font_vivid_orange = pygame.font.SysFont(None, 38)
+
+
+def draw_task(color, y_coord, value, draw, length, speed):
+    global score
+    if draw and length < 200:
+        length += speed
+    elif length >= 200:
+        draw = False
+        length = 0
+        score += value
+    task = pygame.draw.circle(screen, color, (30, y_coord), 20, 5)
+    value_text = font_black.render(str(round(value, 2)), True, text_color)
+    screen.blit(value_text, (16, y_coord - 10))
+    return task, length, draw
+
 
 running = True
 clock = pygame.time.Clock()
@@ -52,14 +76,17 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if task1.collidepoint(event.pos):
+                draw_green = True
 
     screen.blit(background_image, (0, 0))
 
     # Отрисовка орбит
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_1, 1)
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_2, 1)
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_3, 1)
-    pygame.draw.ellipse(screen, (255, 255, 255), orbit_4, 1)
+    pygame.draw.ellipse(screen, white, orbit_1, 1)
+    pygame.draw.ellipse(screen, white, orbit_2, 1)
+    pygame.draw.ellipse(screen, white, orbit_3, 1)
+    pygame.draw.ellipse(screen, white, orbit_4, 1)
 
     # Обновление углов планет
     angle_1 = pygame.time.get_ticks() * angular_speed_1
@@ -87,7 +114,7 @@ while running:
     screen.blit(planet4_image, (planet4_x - planet4_image.get_width() // 2, planet4_y - planet4_image.get_height() // 2))
 
     pygame.draw.rect(screen, shop_button_color, shop_button_rect, border_radius=shop_button_corner_radius)
-    text1 = font.render("Магазин", True, text_color)
+    text1 = font_black.render("Магазин", True, text_color)
     text1_rect = text1.get_rect(center=shop_button_rect.center)
     screen.blit(text1, text1_rect)
 
@@ -99,9 +126,19 @@ while running:
 
     # Отрисовка круглой кнопки "Клик"
     pygame.draw.circle(screen, click_button_color, click_button_rect.center, click_button_corner_radius)
-    text_click = font.render("Клик", True, text_color)
+    text_click = font_black.render("Клик", True, text_color)
     text_click_rect = text_click.get_rect(center=click_button_rect.center)
     screen.blit(text_click, text_click_rect)
+
+    # отрисовка счёта
+    screen.blit(money_border_icon, (30, height - 140))
+    text_money = font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
+    screen.blit(text_money, (55, height - 115))
+    display_score = font_vivid_orange.render(str(round(money, 2)), True, vivid_orange)
+    screen.blit(display_score, (55, height - 75))
+
+    # функционал
+    task1, green_length, draw_green = draw_task(vivid_orange, 50, green_value, draw_green, green_length, green_speed)
 
     pygame.display.flip()
     clock.tick(60)
