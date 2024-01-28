@@ -1,3 +1,5 @@
+import sys
+
 import pygame
 import math
 
@@ -10,7 +12,20 @@ running = True
 background_image = pygame.image.load("data/background.png")
 vivid_orange = (255, 194, 38)
 white = (255, 255, 255)
-text_color = (0, 2, 18)
+space_color = (0, 2, 18)
+
+class Scene:
+    def __init__(self):
+        pass
+
+    def handle_events(self, events):
+        pass
+
+    def update(self):
+        pass
+
+    def draw(self, screen):
+        pass
 
 
 class GameState:
@@ -35,34 +50,35 @@ class GameState:
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
 
-    def handle_event(self, event):
-        if self.planet_screen_active:
-            self.current_state.handle_event(event)
-        else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.current_state.shop_button_rect.collidepoint(event.pos):
-                    # Добавьте здесь действия для нажатия на кнопку "Магазин"
-                    pass
-                elif self.current_state.help_button_rect.collidepoint(event.pos):
-                    # Добавьте здесь действия для нажатия на кнопку "Помощь"
-                    pass
-                elif self.current_state.setting_button_rect.collidepoint(event.pos):
-                    # Добавьте здесь действия для нажатия на кнопку "Настройки"
-                    pass
-                elif self.current_state.planet_1_rect.collidepoint(event.pos):
-                    self.set_selected_planet(1)
-                    self.current_state.switch_to_planet_screen(1)
-                elif self.current_state.planet_2_rect.collidepoint(event.pos):
-                    self.set_selected_planet(2)
-                    self.current_state.switch_to_planet_screen(2)
-                elif self.current_state.planet_3_rect.collidepoint(event.pos):
-                    self.set_selected_planet(3)
-                    self.current_state.switch_to_planet_screen(3)
-                elif self.current_state.planet_4_rect.collidepoint(event.pos):
-                    self.set_selected_planet(4)
-                    self.current_state.switch_to_planet_screen(4)
-                elif self.current_state.click_button_rect.collidepoint(event.pos):
-                    self.current_state.clicked_on_click_button = True
+    def handle_events(self, events):
+        for event in events:
+            if self.planet_screen_active:
+                self.current_state.handle_events(event)
+            else:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.current_state.shop_button_rect.collidepoint(event.pos):
+                        # Добавьте здесь действия для нажатия на кнопку "Магазин"
+                        pass
+                    elif self.current_state.help_button_rect.collidepoint(event.pos):
+                        # Добавьте здесь действия для нажатия на кнопку "Помощь"
+                        pass
+                    elif self.current_state.setting_button_rect.collidepoint(event.pos):
+                        # Добавьте здесь действия для нажатия на кнопку "Настройки"
+                        return "settings"
+                    elif self.current_state.planet_1_rect.collidepoint(event.pos):
+                        self.set_selected_planet(1)
+                        self.current_state.switch_to_planet_screen(1)
+                    elif self.current_state.planet_2_rect.collidepoint(event.pos):
+                        self.set_selected_planet(2)
+                        self.current_state.switch_to_planet_screen(2)
+                    elif self.current_state.planet_3_rect.collidepoint(event.pos):
+                        self.set_selected_planet(3)
+                        self.current_state.switch_to_planet_screen(3)
+                    elif self.current_state.planet_4_rect.collidepoint(event.pos):
+                        self.set_selected_planet(4)
+                        self.current_state.switch_to_planet_screen(4)
+                    elif self.current_state.click_button_rect.collidepoint(event.pos):
+                        self.current_state.clicked_on_click_button = True
 
     def update(self):
         if self.planet_screen_active:
@@ -78,6 +94,108 @@ class GameState:
             # Добавьте отрисовку для главного экрана, если необходимо
             self.current_state.draw(screen)
 
+
+class SettingsOverlay:
+    def __init__(self):
+        self.rect = pygame.Rect(100, 100, 600, 400)
+        self.font = pygame.font.Font(None, 28)
+        self.volume_music = 50
+        self.volume_effects = 50
+        self.mute_music = False
+        self.mute_effects = False
+        self.exit_button = pygame.Rect(150, 354, 200, 50)
+        self.close_button = pygame.Rect(400, 354, 200, 50)
+        self.update_buttons()
+
+    def update_buttons(self):
+        self.volume_music_button = pygame.Rect(150, 155, 200, 50)  # Подвигаем второй ряд на 5 пикселей вниз
+        self.volume_effects_button = pygame.Rect(150, 240, 200, 50)  # Подвигаем второй ряд на 5 пикселей вниз
+        self.mute_music_button = pygame.Rect(400, 155, 200, 50)  # Подвигаем второй ряд на 5 пикселей вниз
+        self.mute_effects_button = pygame.Rect(400, 240, 200, 50)  # Подвигаем второй ряд на 5 пикселей вниз
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.exit_button.collidepoint(event.pos):
+                    pygame.quit()
+                    sys.exit()
+                elif self.close_button.collidepoint(event.pos):
+                    return "close_settings"
+                elif self.volume_music_button.collidepoint(event.pos):
+                    self.volume_music = max(0, min(100, (event.pos[0] - self.volume_music_button.x) / self.volume_music_button.width * 100))
+                    self.mute_music = False
+                elif self.volume_effects_button.collidepoint(event.pos):
+                    self.volume_effects = max(0, min(100, (event.pos[0] - self.volume_effects_button.x) / self.volume_effects_button.width * 100))
+                    self.mute_effects = False
+                elif self.mute_music_button.collidepoint(event.pos):
+                    self.mute_music = not self.mute_music
+                    self.volume_music = 0 if self.mute_music else 50
+                elif self.mute_effects_button.collidepoint(event.pos):
+                    self.mute_effects = not self.mute_effects
+                    self.volume_effects = 0 if self.mute_effects else 50
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return "close_settings"
+        return None
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, space_color, self.rect)  # Изменяем цвет на (255,
+        # 194, 38)
+
+        exit_text = self.font.render("Выйти из игры", True, space_color)  # Изменяем цвет на (255, 194, 38)
+        exit_rect = exit_text.get_rect(center=self.exit_button.center)
+        pygame.draw.rect(screen, vivid_orange, self.exit_button)
+        screen.blit(exit_text, exit_rect)
+
+        close_text = self.font.render("Закрыть настройки", True, space_color)  # Изменяем цвет на (255, 194, 38)
+        close_rect = close_text.get_rect(center=self.close_button.center)
+        pygame.draw.rect(screen, vivid_orange, self.close_button)
+        screen.blit(close_text, close_rect)
+
+        volume_music_text = self.font.render(f"Music Volume: {int(self.volume_music)}%", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        volume_effects_text = self.font.render(f"Effects Volume: {int(self.volume_effects)}%", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        mute_music_text = self.font.render(f"Mute Music: {self.mute_music}", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
+        mute_effects_text = self.font.render(f"Mute Effects: {self.mute_effects}", True, vivid_orange)  # Изменяем цвет на (255, 194, 38)
+
+        pygame.draw.rect(screen, vivid_orange, self.volume_music_button, 2)  # Изменяем цвет на (255, 194, 38)
+        pygame.draw.rect(screen, vivid_orange, self.volume_effects_button, 2)  # Изменяем цвет на (255, 194, 38)
+        pygame.draw.rect(screen, vivid_orange, (self.volume_music_button.x, self.volume_music_button.y, self.volume_music_button.width * self.volume_music / 100, self.volume_music_button.height))
+        pygame.draw.rect(screen, vivid_orange, (self.volume_effects_button.x, self.volume_effects_button.y, self.volume_effects_button.width * self.volume_effects / 100, self.volume_effects_button.height))
+
+        pygame.draw.rect(screen, vivid_orange, self.mute_music_button, 2)  # Изменяем цвет на (255, 194, 38)
+        pygame.draw.rect(screen, vivid_orange, self.mute_effects_button, 2)  # Изменяем цвет на (255, 194, 38)
+
+        if self.mute_music:
+            pygame.draw.rect(screen, (70, 70, 70), self.mute_music_button)
+        if self.mute_effects:
+            pygame.draw.rect(screen, (70, 70, 70), self.mute_effects_button)
+
+        screen.blit(volume_music_text, (150, 130))  # Подвигаем второй ряд на
+        # 5 пикселей вниз
+        screen.blit(volume_effects_text, (150, 215))  # Подвигаем второй ряд
+        # на 5 пикселей вниз
+        screen.blit(mute_music_text, (400, 130))  # Подвигаем второй ряд на 5
+        # пикселей вниз
+        screen.blit(mute_effects_text, (400, 215))  # Подвигаем второй ряд
+        # на 5 пикселей вниз
+
+class SettingsMenu(Scene):
+    def __init__(self):
+        super().__init__()
+        self.settings_overlay = SettingsOverlay()
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return "close_settings"
+        result = self.settings_overlay.handle_events(events)
+        if result:
+            print(result)
+            if result == "close_settings":
+                return "main_menu"
+        return None
+
+    def draw(self, screen):
+        self.settings_overlay.draw(screen)
 
 class GameScreenState:
     def __init__(self):
@@ -173,21 +291,22 @@ class GameScreenState:
             self.money += self.money_click_increment
             self.clicked_on_click_button = False
 
-    def handle_event(self, event):
-        if self.planet_screen_active:
-            self.current_state.handle_event(event)
-        else:
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.planet_1_rect.collidepoint(event.pos):
-                    self.switch_to_planet_screen(1)
-                elif self.planet_2_rect.collidepoint(event.pos):
-                    self.switch_to_planet_screen(2)
-                elif self.planet_3_rect.collidepoint(event.pos):
-                    self.switch_to_planet_screen(3)
-                elif self.planet_4_rect.collidepoint(event.pos):
-                    self.switch_to_planet_screen(4)
-                elif self.click_button_rect.collidepoint(event.pos):
-                    self.clicked_on_click_button = True
+    def handle_events(self, events):
+        for event in events:
+            if self.planet_screen_active:
+                self.current_state.handle_events(event)
+            else:
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.planet_1_rect.collidepoint(event.pos):
+                        self.switch_to_planet_screen(1)
+                    elif self.planet_2_rect.collidepoint(event.pos):
+                        self.switch_to_planet_screen(2)
+                    elif self.planet_3_rect.collidepoint(event.pos):
+                        self.switch_to_planet_screen(3)
+                    elif self.planet_4_rect.collidepoint(event.pos):
+                        self.switch_to_planet_screen(4)
+                    elif self.click_button_rect.collidepoint(event.pos):
+                        self.clicked_on_click_button = True
 
     def update_planet_positions(self):
         self.planet1_x = int(self.orbit_1.centerx + self.orbit_1.width / 2 * math.cos(self.angle_1))
@@ -209,7 +328,7 @@ class GameScreenState:
     def draw(self, screen):
         pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
                          border_radius=self.shop_button_corner_radius)
-        text1 = self.font_black.render("Магазин", True, text_color)
+        text1 = self.font_black.render("Магазин", True, space_color)
         text1_rect = text1.get_rect(center=self.shop_button_rect.center)
         screen.blit(text1, text1_rect)
 
@@ -227,7 +346,7 @@ class GameScreenState:
         # Отрисовка круглой кнопки "Клик"
         pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
                            self.click_button_corner_radius)
-        text_click = pygame.font.SysFont(None, 32).render("Клик", True, text_color)
+        text_click = pygame.font.SysFont(None, 32).render("Клик", True, space_color)
         text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
         screen.blit(text_click, text_click_rect)
 
@@ -269,12 +388,13 @@ class PlanetScreenState:
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)  # Ваши координаты орбиты здесь
 
-    def handle_event(self, event):
-        # Обработка событий для экрана с планетой
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if self.orbit_rect.collidepoint(event.pos):
-                # Здесь вы можете выполнить действия, связанные с нажатием на планету
-                pass
+    def handle_events(self, events):
+        for event in events:
+            # Обработка событий для экрана с планетой
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.orbit_rect.collidepoint(event.pos):
+                    # Здесь вы можете выполнить действия, связанные с нажатием на планету
+                    pass
 
     def update(self):
         # Логика обновления для экрана с планетой
@@ -288,7 +408,7 @@ class PlanetScreenState:
         text_y = 20  # Измените на необходимые вам координаты
 
         # Отображение текста
-        text = pygame.font.SysFont(None, 24).render(f"Планета {self.planet_id}", True, text_color)
+        text = pygame.font.SysFont(None, 24).render(f"Планета {self.planet_id}", True, space_color)
         screen.blit(text, (text_x, text_y))
 
         # Отображение изображения планеты
@@ -299,18 +419,31 @@ class PlanetScreenState:
 
 
 game_state = GameState()
+settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
+current_scene = game_state
 
 while running:
-    for event in pygame.event.get():
+    events = pygame.event.get()
+
+    for event in events:
         if event.type == pygame.QUIT:
             running = False
-        game_state.handle_event(event)
 
-    game_state.update()
+    # Обработка событий и переключение сцен
+    result = current_scene.handle_events(events)
+    if result:
+        if current_scene == game_state:
+            if result == "settings":
+                current_scene = settings_menu
+        elif current_scene == settings_menu:
+            if result == "main_menu" or result == "close_settings":
+                current_scene = game_state
+
+    current_scene.update()
 
     screen.blit(background_image, (0, 0))
-    game_state.draw(screen)
+    current_scene.draw(screen)
 
     pygame.display.flip()
     clock.tick(60)
