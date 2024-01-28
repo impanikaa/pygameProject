@@ -51,23 +51,8 @@ click_button_rect = pygame.Rect(715, 420, 160, 160)
 click_button_color = vivid_orange
 click_button_corner_radius = click_button_rect.width // 2
 
-font_black = pygame.font.SysFont(None, 32)
-font_vivid_orange = pygame.font.SysFont(None, 38)
-
-
-def draw_task(color, y_coord, value, draw, length, speed):
-    global score
-    if draw and length < 200:
-        length += speed
-    elif length >= 200:
-        draw = False
-        length = 0
-        score += value
-    task = pygame.draw.circle(screen, color, (30, y_coord), 20, 5)
-    value_text = font_black.render(str(round(value, 2)), True, text_color)
-    screen.blit(value_text, (16, y_coord - 10))
-    return task, length, draw
-
+font_black = pygame.font.SysFont('freesansbold.ttf', 32)
+font_vivid_orange = pygame.font.SysFont('freesansbold.ttf', 38)
 
 running = True
 clock = pygame.time.Clock()
@@ -76,9 +61,9 @@ while running:
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
-        #if event.type == pygame.MOUSEBUTTONDOWN:
-        #    if task1.collidepoint(event.pos):
-        #        draw_green = True
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if task.collidepoint(event.pos):
+               money += 1
 
     screen.blit(background_image, (0, 0))
 
@@ -125,7 +110,7 @@ while running:
     screen.blit(setting_button_icon, (setting_button_rect.centerx - setting_button_icon.get_width() // 2, setting_button_rect.centery - setting_button_icon.get_height() // 2))
 
     # Отрисовка круглой кнопки "Клик"
-    pygame.draw.circle(screen, click_button_color, click_button_rect.center, click_button_corner_radius)
+    task = pygame.draw.circle(screen, click_button_color, click_button_rect.center, click_button_corner_radius)
     text_click = font_black.render("Клик", True, text_color)
     text_click_rect = text_click.get_rect(center=click_button_rect.center)
     screen.blit(text_click, text_click_rect)
@@ -136,9 +121,6 @@ while running:
     screen.blit(text_money, (55, height - 115))
     display_score = font_vivid_orange.render(str(round(money, 2)), True, vivid_orange)
     screen.blit(display_score, (55, height - 75))
-
-    # функционал
-    # task1, green_length, draw_green = draw_task(vivid_orange, 50, green_value, draw_green, green_length, green_speed)
 
     pygame.display.flip()
     clock.tick(60)
