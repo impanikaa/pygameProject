@@ -9,6 +9,8 @@ screen = pygame.display.set_mode((width, height))
 
 running = True
 
+money = 0
+
 background_image = pygame.image.load("data/background.png")
 vivid_orange = (255, 194, 38)
 white = (255, 255, 255)
@@ -70,7 +72,7 @@ class GameState:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state.shop_button_rect.collidepoint(event.pos):
                         # Добавьте здесь действия для нажатия на кнопку "Магазин"
-                        pass
+                        return "shop"
                     elif self.current_state.help_button_rect.collidepoint(event.pos):
                         # Добавьте здесь действия для нажатия на кнопку "Помощь"
                         pass
@@ -378,6 +380,12 @@ class GameScreenState:
         # Обновление углов планет
         self.update()
 
+        # Отрисовка орбит
+        pygame.draw.ellipse(screen, white, self.orbit_1, 1)
+        pygame.draw.ellipse(screen, white, self.orbit_2, 1)
+        pygame.draw.ellipse(screen, white, self.orbit_3, 1)
+        pygame.draw.ellipse(screen, white, self.orbit_4, 1)
+
         # Отрисовка планет
         screen.blit(self.planet1_image, (
             self.planet1_x - self.planet1_image.get_width() // 2,
@@ -392,16 +400,144 @@ class GameScreenState:
             self.planet4_x - self.planet4_image.get_width() // 2,
             self.planet4_y - self.planet4_image.get_height() // 2))
 
-        # Отрисовка орбит
-        pygame.draw.ellipse(screen, white, self.orbit_1, 1)
-        pygame.draw.ellipse(screen, white, self.orbit_2, 1)
-        pygame.draw.ellipse(screen, white, self.orbit_3, 1)
-        pygame.draw.ellipse(screen, white, self.orbit_4, 1)
 
-        pygame.draw.rect(screen, white, self.planet_1_rect, 1)
+        '''pygame.draw.rect(screen, white, self.planet_1_rect, 1)
         pygame.draw.rect(screen, white, self.planet_2_rect, 1)
         pygame.draw.rect(screen, white, self.planet_3_rect, 1)
-        pygame.draw.rect(screen, white, self.planet_4_rect, 1)
+        pygame.draw.rect(screen, white, self.planet_4_rect, 1)'''
+
+
+
+# Класс для кнопок в игре
+class Button:
+    def __init__(self, x, y, width, height, color, text, info_text, action=None):
+        self.rect = pygame.Rect(x, y, width, height)
+        self.color = color
+        self.text = text
+        self.info_text = info_text
+        self.action = action
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect)
+        font = pygame.font.Font(None, 36)
+        text = font.render(self.text, True, space_color)
+        text_rect = text.get_rect(center=self.rect.center)
+        screen.blit(text, text_rect)
+
+    def draw_info(self, screen):
+        font = pygame.font.Font(None, 24)
+        info_text = font.render(self.info_text, True, white)
+        text_rect = info_text.get_rect(midleft=(self.rect.right + 10, self.rect.centery))
+        screen.blit(info_text, text_rect)
+
+    def handle_click(self, x, y):
+        if self.rect.collidepoint(x, y) and self.action:
+            self.action()
+
+
+# Класс для предметов в магазине
+class ShopItem:
+    def __init__(self, name, base_click_value, base_cost):
+        self.name = name
+        self.base_click_value = base_click_value
+        self.base_cost = base_cost
+        self.level = 0
+
+    @property
+    def click_value(self):
+        return self.base_click_value * (self.level + 1)
+
+    @property
+    def cost(self):
+        return self.base_cost * (self.level + 1)
+
+    def upgrade(self):
+        self.level += 1
+
+
+# Класс для магазина
+class Shop:
+    def __init__(self):
+        self.items = [
+            ShopItem("Upgrade 1", base_click_value=1, base_cost=10),
+            ShopItem("Upgrade 2", base_click_value=5, base_cost=20),
+            ShopItem("Upgrade 3", base_click_value=10, base_cost=50),
+            ShopItem("Upgrade 4", base_click_value=20, base_cost=100),
+            # Добавьте другие предметы магазина по аналогии
+        ]
+        self.money = 0
+
+    def handle_click(self):
+        for item in self.items:
+            self.money += item.click_value
+
+    def purchase_item(self, item_index):
+        if 0 <= item_index < len(self.items):
+            item = self.items[item_index]
+            if self.money >= item.cost:
+                self.money -= item.cost
+                item.upgrade()
+
+    def get_shop_info(self):
+        shop_info = []
+        for item in self.items:
+            info = f"{item.name} (Уровень {item.level}): +{item.click_value} за клик, Стоимость: {item.cost} монет"
+            shop_info.append(info)
+        return shop_info
+
+
+# добавление магазина
+class ShopScene(Scene):
+    def __init__(self):
+        super().__init__()
+        self.shop = Shop()
+        self.shop_buttons = [
+            Button(50, 90 + i * 70, 200, 50, vivid_orange, f"Купить {i+1}", "", action=lambda i=i: self.purchase_item(i))
+            for i in range(len(self.shop.items))
+        ]
+        self.exit_button = Button(50, 20, 200, 50, vivid_orange, "Назад", "Вернуться на главный экран", action=self.go_back)
+
+        self.money_color = vivid_orange
+        self.money_border_icon = pygame.image.load("data/border.png")
+
+        self.font = pygame.font.SysFont(None, 38)
+
+    def purchase_item(self, item_index):
+        self.shop.purchase_item(item_index)
+
+    def go_back(self):
+        global current_scene
+        current_scene = game_state
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                x, y = event.pos
+                for button in self.shop_buttons:
+                    button.handle_click(x, y)
+                self.exit_button.handle_click(x, y)
+
+    def draw(self, screen):
+        # screen.fill(space_color)
+        self.exit_button.draw(screen)
+        self.exit_button.draw_info(screen)
+        global money
+
+        screen.blit(self.money_border_icon, (30, height - 140))
+        text_money = self.font.render("Ваш баланс:", True, vivid_orange)
+        screen.blit(text_money, (55, height - 115))
+        display_score = self.font.render(f"{round(money, 2)} $", True, vivid_orange)
+        screen.blit(display_score, (55, height - 75))
+
+        for button in self.shop_buttons:
+            button.draw(screen)
+            button.draw_info(screen)
+
+        shop_info = self.shop.get_shop_info()
+        for i, info in enumerate(shop_info):
+            text = self.font.render(info, True, white)
+            rect = text.get_rect(midleft=(300, 50 + i * 70))
+            screen.blit(text, rect)
 
 
 class PlanetScreenState:
@@ -504,6 +640,7 @@ class PlanetScreenState:
         screen.blit(display_score, (55, height - 75))
 
 
+shop_menu = ShopScene()
 game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
@@ -522,6 +659,8 @@ while running:
         if current_scene == game_state:
             if result == "settings":
                 current_scene = settings_menu
+            elif result == "shop":
+                current_scene = shop_menu
         elif current_scene == settings_menu:
             if result == "main_menu" or result == "close_settings":
                 current_scene = game_state
