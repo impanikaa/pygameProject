@@ -565,9 +565,11 @@ class Shop:
 
     def purchase_item(self, item_index):
         shop = game_state.get_shop()
-        if game_state.get_money() >= shop.items[item_index].cost:
+        item = self.items[item_index]
+        if game_state.get_money() >= item.cost:
             game_state.update_money(-shop.items[item_index].cost)
             game_state.update_increment_click(shop.items[item_index].click_value)
+            item.upgrade()
 
     def get_shop_info(self):
         shop_info = []
@@ -850,38 +852,6 @@ while running:
             p = current_state
             current_state = game_state
             game_state_prev = p
-        '''if current_state == game_state:
-            if result == "settings":
-                game_state_prev = current_state
-                current_state = settings_menu
-            elif result == "shop":
-                game_state_prev = current_state
-                current_state = shop_menu
-            elif result == "instruction":
-                game_state_prev = current_state
-                current_state = instruction
-        elif current_state == settings_menu:
-            if result == "main_menu" or result == "close_settings":
-                print(game_state, game_state_prev)
-                current_state = game_state_prev
-        elif current_state == instruction:
-            if result == "main_menu":
-                current_state = game_state_prev
-        else:
-            if result == "settings":
-                p = current_state
-                current_state = settings_menu
-                game_state_prev = p
-            elif result == "return_to_main_menu":
-                current_state = game_state
-            elif result == "shop":
-                p = current_state
-                current_state = shop_menu
-                game_state_prev = p
-            elif result == "instruction":
-                p = current_state
-                current_state = instruction
-                game_state_prev = p'''
 
     current_state.update()
 
