@@ -107,25 +107,28 @@ class GameState:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state.shop_button_rect.collidepoint(event.pos):
                         return "shop"
-                    if self.current_state.help_button_rect.collidepoint(event.pos):
-                        return "instruction"
                     elif self.current_state.help_button_rect.collidepoint(event.pos):
-                        pass
+                        return "instruction"
                     elif self.current_state.setting_button_rect.collidepoint(event.pos):
                         return "settings"
                     elif self.current_state.planet_1_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(1)
                         self.switch_to_planet_screen(1)
                     elif self.current_state.planet_2_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(2)
                         self.switch_to_planet_screen(2)
                     elif self.current_state.planet_3_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(3)
                         self.switch_to_planet_screen(3)
                     elif self.current_state.planet_4_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(4)
                         self.switch_to_planet_screen(4)
                     elif self.current_state.click_button_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_click_state(True)
                         self.current_state.clicked_on_click_button = True
 
@@ -156,6 +159,14 @@ class SettingsOverlay:
         self.close_button = pygame.Rect(500, 354, 200, 50)
         self.update_buttons()
 
+    def update_music_volume(self):
+        pygame.mixer.music.set_volume(self.volume_music / 100)
+
+    def update_effects_volume(self):
+        pygame.mixer.set_num_channels(8)  # Устанавливаем количество каналов
+        for channel in pygame.mixer.Channel.get_busy():
+            channel.set_volume(self.volume_effects / 100)
+
     def update_buttons(self):
         self.volume_music_button = pygame.Rect(250, 155, 200, 50)
         self.volume_effects_button = pygame.Rect(250, 240, 200, 50)
@@ -171,19 +182,35 @@ class SettingsOverlay:
                 elif self.close_button.collidepoint(event.pos):
                     return "back"
                 elif self.volume_music_button.collidepoint(event.pos):
+                    click_sound.play()
                     self.volume_music = max(0, min(100, (
                             event.pos[0] - self.volume_music_button.x) / self.volume_music_button.width * 100))
                     self.mute_music = False
                 elif self.volume_effects_button.collidepoint(event.pos):
+                    click_sound.play()
                     self.volume_effects = max(0, min(100, (
                             event.pos[0] - self.volume_effects_button.x) / self.volume_effects_button.width * 100))
                     self.mute_effects = False
                 elif self.mute_music_button.collidepoint(event.pos):
+                    click_sound.play()
                     self.mute_music = not self.mute_music
                     self.volume_music = 0 if self.mute_music else 50
                 elif self.mute_effects_button.collidepoint(event.pos):
+                    click_sound.play()
                     self.mute_effects = not self.mute_effects
                     self.volume_effects = 0 if self.mute_effects else 50
+                elif self.volume_music_button.collidepoint(event.pos):
+                    click_sound.play()
+                    self.volume_music = max(0, min(100, (
+                            event.pos[0] - self.volume_music_button.x) / self.volume_music_button.width * 100))
+                    self.update_music_volume()
+                    self.mute_music = False
+                elif self.volume_effects_button.collidepoint(event.pos):
+                    click_sound.play()
+                    self.volume_effects = max(0, min(100, (
+                            event.pos[0] - self.volume_effects_button.x) / self.volume_effects_button.width * 100))
+                    self.update_effects_volume()
+                    self.mute_effects = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
                 return "back"
         return None
@@ -204,6 +231,52 @@ class SettingsOverlay:
         volume_effects_text = self.font.render(f"Effects Volume: {int(self.volume_effects)}%", True, vivid_orange)
         mute_music_text = self.font.render(f"Mute Music: {self.mute_music}", True, vivid_orange)
         mute_effects_text = self.font.render(f"Mute Effects: {self.mute_effects}", True, vivid_orange)
+
+        if 0 == self.volume_music:
+            pygame.mixer.music.set_volume(0.0)
+        elif 10 >= self.volume_music > 0:
+            pygame.mixer.music.set_volume(0.1)
+        elif 20 >= self.volume_music > 10:
+            pygame.mixer.music.set_volume(0.2)
+        elif 30 >= self.volume_music > 20:
+            pygame.mixer.music.set_volume(0.3)
+        elif 40 >= self.volume_music > 30:
+            pygame.mixer.music.set_volume(0.4)
+        elif 50 >= self.volume_music > 40:
+            pygame.mixer.music.set_volume(0.5)
+        elif 60 >= self.volume_music > 50:
+            pygame.mixer.music.set_volume(0.6)
+        elif 70 >= self.volume_music > 60:
+            pygame.mixer.music.set_volume(0.7)
+        elif 80 >= self.volume_music > 70:
+            pygame.mixer.music.set_volume(0.8)
+        elif 90 >= self.volume_music > 80:
+            pygame.mixer.music.set_volume(0.9)
+        elif 100 >= self.volume_music > 90:
+            pygame.mixer.music.set_volume(1.0)
+
+        if 0 == self.volume_effects:
+            click_sound.set_volume(0.0)
+        elif 10 >= self.volume_effects > 0:
+            click_sound.set_volume(0.1)
+        elif 20 >= self.volume_effects > 10:
+            click_sound.set_volume(0.2)
+        elif 30 >= self.volume_effects > 20:
+            click_sound.set_volume(0.3)
+        elif 40 >= self.volume_effects > 30:
+            click_sound.set_volume(0.4)
+        elif 50 >= self.volume_effects > 40:
+            click_sound.set_volume(0.5)
+        elif 60 >= self.volume_effects > 50:
+            click_sound.set_volume(0.6)
+        elif 70 >= self.volume_effects > 60:
+            click_sound.set_volume(0.7)
+        elif 80 >= self.volume_effects > 70:
+            click_sound.set_volume(0.8)
+        elif 90 >= self.volume_effects > 80:
+            click_sound.set_volume(0.9)
+        elif 100 >= self.volume_effects > 90:
+            click_sound.set_volume(1.0)
 
         pygame.draw.rect(screen, vivid_orange, self.volume_music_button, 2)
         pygame.draw.rect(screen, vivid_orange, self.volume_effects_button, 2)
@@ -349,18 +422,23 @@ class GameScreenState:
             else:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.planet_1_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(1)
                         self.switch_to_planet_screen(1)
                     elif self.planet_2_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(2)
                         self.switch_to_planet_screen(2)
                     elif self.planet_3_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(3)
                         self.switch_to_planet_screen(3)
                     elif self.planet_4_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.set_selected_planet(4)
                         self.switch_to_planet_screen(4)
                     elif self.click_button_rect.collidepoint(event.pos):
+                        click_sound.play()
                         self.clicked_on_click_button = True
 
     def update_planet_positions(self):
@@ -707,6 +785,7 @@ class PlanetScreenState:
                 for i, position in enumerate(self.point_positions):
                     rect = pygame.Rect(position[0], position[1], 70, 100)
                     if rect.collidepoint(event.pos) and not self.point_click_processed[i]:
+                        click_sound.play()
                         self.update_increment(i)
                         print(f"Clicked on point {i + 1}")
                         self.point_click_processed[i] = True
@@ -810,6 +889,13 @@ class PlanetScreenState:
                 screen.blit(self.point_images[i], rect.topleft)
 
 
+pygame.mixer.music.load("data/startrack.mp3")
+pygame.mixer.music.set_volume(0.5)  # Здесь 0.9 - это громкость от 0.0 до 1.0
+
+pygame.mixer.init()
+click_sound = pygame.mixer.Sound("data/button.wav")
+click_sound.set_volume(0.5)
+
 shop_menu = ShopScene()
 instruction = InstructionScreen()
 game_state = GameState()
@@ -833,27 +919,35 @@ while running:
     result = current_state.handle_events(events)
     if result:
         if result == "settings":
+            click_sound.play()
             p = current_state
             current_state = settings_menu
             game_state_prev = p
         elif result == "shop":
+            click_sound.play()
             p = current_state
             current_state = shop_menu
             game_state_prev = p
         elif result == "instruction":
+            click_sound.play()
             p = current_state
             current_state = instruction
             game_state_prev = p
         elif result == "back":
+            click_sound.play()
             p = current_state
             current_state = game_state_prev
             game_state_prev = p
         elif result == "menu":
+            click_sound.play()
             p = current_state
             current_state = game_state
             game_state_prev = p
 
     current_state.update()
+
+    if pygame.mixer.music.get_busy() == 0:
+        pygame.mixer.music.play()
 
     screen.blit(background_image, (0, 0))
     current_state.draw(screen)
