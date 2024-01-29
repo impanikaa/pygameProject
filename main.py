@@ -84,7 +84,14 @@ class GameState:
         global current_state
         # self.current_state = PlanetScreenState(planet_id, self)
         # self.planet_screen_active = True
-        current_state = PlanetScreenState(planet_id, self)
+        if planet_id == 1:
+            current_state = planet_1
+        if planet_id == 2:
+            current_state = planet_2
+        if planet_id == 3:
+            current_state = planet_3
+        if planet_id == 4:
+            current_state = planet_4
 
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
@@ -162,7 +169,7 @@ class SettingsOverlay:
                     pygame.quit()
                     sys.exit()
                 elif self.close_button.collidepoint(event.pos):
-                    return "close_settings"
+                    return "back"
                 elif self.volume_music_button.collidepoint(event.pos):
                     self.volume_music = max(0, min(100, (
                             event.pos[0] - self.volume_music_button.x) / self.volume_music_button.width * 100))
@@ -178,7 +185,7 @@ class SettingsOverlay:
                     self.mute_effects = not self.mute_effects
                     self.volume_effects = 0 if self.mute_effects else 50
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "close_settings"
+                return "back"
         return None
 
     def draw(self, screen):
@@ -229,11 +236,11 @@ class SettingsMenu(Scene):
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "close_settings"
+                return "back"
         result = self.settings_overlay.handle_events(events)
         if result:
-            if result == "close_settings":
-                return "main_menu"
+            if result == "back":
+                return "back"
         return None
 
     def draw(self, screen):
@@ -435,11 +442,6 @@ class GameScreenState:
             self.planet4_x - self.planet4_image.get_width() // 2,
             self.planet4_y - self.planet4_image.get_height() // 2))
 
-        '''pygame.draw.rect(screen, white, self.planet_1_rect, 1)
-        pygame.draw.rect(screen, white, self.planet_2_rect, 1)
-        pygame.draw.rect(screen, white, self.planet_3_rect, 1)
-        pygame.draw.rect(screen, white, self.planet_4_rect, 1)'''
-
 
 # Класс для кнопок в игре
 class Button:
@@ -471,6 +473,7 @@ class Button:
 class InstructionScreen(Scene):
     def __init__(self):
         self.font = pygame.font.SysFont(None, 24)
+        self.close_button = pygame.Rect(350, 535, 200, 50)
 
         # Текст инструкции
         self.instruction_text = [
@@ -501,6 +504,15 @@ class InstructionScreen(Scene):
             "Приятного путешествия по космосу и удачи в достижении максимального космического баланса!"
         ]
 
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.close_button.collidepoint(event.pos):
+                    return "back"
+            elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
+                return "back"
+        return None
+
     def draw(self, screen):
         # Отображение текста
         text_height = 20
@@ -508,6 +520,11 @@ class InstructionScreen(Scene):
             text_render = self.font.render(line, True, (255, 255, 255))
             screen.blit(text_render, (30, text_height))
             text_height += 20
+
+        close_text = self.font.render("Вернуться", True, space_color)
+        close_rect = close_text.get_rect(center=self.close_button.center)
+        pygame.draw.rect(screen, vivid_orange, self.close_button)
+        screen.blit(close_text, close_rect)
 
 
 # Класс для предметов в магазине
@@ -570,8 +587,8 @@ class ShopScene(Scene):
                    action=lambda i=i: self.purchase_item(i))
             for i in range(len(self.shop.items))
         ]
-        self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться на главный экран",
-                                  action=self.go_back)
+        self.return_button_rect = pygame.Rect(30, 20, 200, 50)
+        self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться назад")
 
         self.money_color = vivid_orange
         self.money_border_icon = pygame.image.load("data/border.png")
@@ -583,10 +600,6 @@ class ShopScene(Scene):
     def purchase_item(self, item_index):
         self.shop.purchase_item(item_index)
 
-    def go_back(self):
-        global current_state
-        current_state = game_state
-
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -594,6 +607,8 @@ class ShopScene(Scene):
                 for button in self.shop_buttons:
                     button.handle_click(x, y)
                 self.exit_button.handle_click(x, y)
+                if self.return_button_rect.collidepoint(event.pos):
+                    return "back"
 
     def draw(self, screen):
         # screen.fill(space_color)
@@ -623,8 +638,9 @@ class ShopScene(Scene):
 
 
 class PlanetScreenState:
-    def __init__(self, planet_id, current_state):
+    def __init__(self, planet_id):
         self.planet_id = planet_id
+        global current_state
         self.current_state = current_state
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)
@@ -697,7 +713,7 @@ class PlanetScreenState:
                 elif self.setting_button_rect.collidepoint(event.pos):
                     return "settings"
                 elif self.return_button_rect.collidepoint(event.pos):
-                    return "return_to_main_menu"
+                    return "menu"
                 if self.shop_button_rect.collidepoint(event.pos):
                     return "shop"
                 if self.help_button_rect.collidepoint(event.pos):
@@ -798,6 +814,11 @@ game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
 current_state = game_state
+game_state_prev = current_state
+planet_1 = PlanetScreenState(1)
+planet_2 = PlanetScreenState(2)
+planet_3 = PlanetScreenState(3)
+planet_4 = PlanetScreenState(4)
 
 while running:
     events = pygame.event.get()
@@ -809,25 +830,58 @@ while running:
     # Обработка событий и переключение сцен
     result = current_state.handle_events(events)
     if result:
-        if current_state == game_state:
+        if result == "settings":
+            p = current_state
+            current_state = settings_menu
+            game_state_prev = p
+        elif result == "shop":
+            p = current_state
+            current_state = shop_menu
+            game_state_prev = p
+        elif result == "instruction":
+            p = current_state
+            current_state = instruction
+            game_state_prev = p
+        elif result == "back":
+            p = current_state
+            current_state = game_state_prev
+            game_state_prev = p
+        elif result == "menu":
+            p = current_state
+            current_state = game_state
+            game_state_prev = p
+        '''if current_state == game_state:
             if result == "settings":
+                game_state_prev = current_state
                 current_state = settings_menu
             elif result == "shop":
+                game_state_prev = current_state
                 current_state = shop_menu
             elif result == "instruction":
+                game_state_prev = current_state
                 current_state = instruction
         elif current_state == settings_menu:
             if result == "main_menu" or result == "close_settings":
-                current_state = game_state
+                print(game_state, game_state_prev)
+                current_state = game_state_prev
+        elif current_state == instruction:
+            if result == "main_menu":
+                current_state = game_state_prev
         else:
             if result == "settings":
+                p = current_state
                 current_state = settings_menu
+                game_state_prev = p
             elif result == "return_to_main_menu":
                 current_state = game_state
             elif result == "shop":
+                p = current_state
                 current_state = shop_menu
+                game_state_prev = p
             elif result == "instruction":
+                p = current_state
                 current_state = instruction
+                game_state_prev = p'''
 
     current_state.update()
 
