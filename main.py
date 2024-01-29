@@ -403,14 +403,14 @@ class GameScreenState:
 
         # отрисовка счёта
         screen.blit(self.money_border_icon, (30, height - 140))
-        text_money = self.font.render("Ваш баланс:", True, vivid_orange)
-        screen.blit(text_money, (55, height - 115))
+        text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
+        screen.blit(text_money, (55, height - 122))
         display_score = self.font.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
-        screen.blit(display_score, (55, height - 80))
+        screen.blit(display_score, (55, height - 87))
         display_inc_click = self.font.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True, vivid_orange)
-        screen.blit(display_inc_click, (55, height - 50))
+        screen.blit(display_inc_click, (55, height - 57))
         display_inc = self.font.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
-        screen.blit(display_inc, (170, height - 50))
+        screen.blit(display_inc, (170, height - 57))
 
         # Обновление углов планет
         self.update()
@@ -577,6 +577,8 @@ class ShopScene(Scene):
         self.money_border_icon = pygame.image.load("data/border.png")
 
         self.font = pygame.font.SysFont(None, 32)
+        self.font_black = pygame.font.SysFont(None, 32)
+        self.font_vivid_orange = pygame.font.SysFont(None, 38)
 
     def purchase_item(self, item_index):
         self.shop.purchase_item(item_index)
@@ -600,14 +602,14 @@ class ShopScene(Scene):
         global money
 
         screen.blit(self.money_border_icon, (30, height - 140))
-        text_money = self.font.render("Ваш баланс:", True, vivid_orange)
-        screen.blit(text_money, (55, height - 115))
+        text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
+        screen.blit(text_money, (55, height - 122))
         display_score = self.font.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
-        screen.blit(display_score, (55, height - 80))
+        screen.blit(display_score, (55, height - 87))
         display_inc_click = self.font.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True, vivid_orange)
-        screen.blit(display_inc_click, (55, height - 50))
+        screen.blit(display_inc_click, (55, height - 57))
         display_inc = self.font.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
-        screen.blit(display_inc, (170, height - 50))
+        screen.blit(display_inc, (170, height - 57))
 
         for button in self.shop_buttons:
             button.draw(screen)
@@ -774,13 +776,13 @@ class PlanetScreenState:
         # Отрисовка счета
         screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
-        screen.blit(text_money, (55, height - 115))
+        screen.blit(text_money, (55, height - 122))
         display_score = self.font.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
-        screen.blit(display_score, (55, height - 80))
+        screen.blit(display_score, (55, height - 87))
         display_inc_click = self.font.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True, vivid_orange)
-        screen.blit(display_inc_click, (55, height - 50))
+        screen.blit(display_inc_click, (55, height - 57))
         display_inc = self.font.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
-        screen.blit(display_inc, (170, height - 50))
+        screen.blit(display_inc, (170, height - 57))
 
         for i, position in enumerate(self.point_positions):
             rect = pygame.Rect(position[0], position[1], 70, 100)
