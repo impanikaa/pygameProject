@@ -591,8 +591,6 @@ class PlanetScreenState:
                     self.clicked_on_click_button = True
                 elif self.game_state.setting_button_rect.collidepoint(event.pos):
                     return "settings"
-                elif self.click_button_rect.collidepoint(event.pos):
-                    self.clicked_on_click_button = True
 
     def update(self):
         # Обновление времени
