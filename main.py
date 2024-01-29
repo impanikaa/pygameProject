@@ -566,7 +566,7 @@ class Shop:
     def purchase_item(self, item_index):
         shop = game_state.get_shop()
         item = self.items[item_index]
-        if game_state.get_money() >= shop.items[item_index].cost:
+        if game_state.get_money() >= item.cost:
             game_state.update_money(-shop.items[item_index].cost)
             game_state.update_increment_click(shop.items[item_index].click_value)
             item.upgrade()
