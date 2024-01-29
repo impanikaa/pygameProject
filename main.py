@@ -100,6 +100,8 @@ class GameState:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state.shop_button_rect.collidepoint(event.pos):
                         return "shop"
+                    if self.current_state.help_button_rect.collidepoint(event.pos):
+                        return "instruction"
                     elif self.current_state.help_button_rect.collidepoint(event.pos):
                         pass
                     elif self.current_state.setting_button_rect.collidepoint(event.pos):
@@ -466,6 +468,48 @@ class Button:
             self.action()
 
 
+class InstructionScreen(Scene):
+    def __init__(self):
+        self.font = pygame.font.SysFont(None, 24)
+
+        # Текст инструкции
+        self.instruction_text = [
+            "Добро пожаловать в инкрементальную игру 'Космический Кликер'!",
+            "",
+            "Цель игры: Увеличивайте свой космический баланс, нажимая на кнопку 'Клик' и автоматизируя доход.",
+            "Зарабатывайте монеты и развивайте свой космический мир.",
+            "",
+            "Основные шаги:",
+            "1. Нажимайте на Кнопку 'Клик': Чем больше кликов, тем больше монет вы зарабатываете.",
+            "   Прокачивайте этот процесс для увеличения дохода.",
+            "2. Магазин и Улучшения: Посещайте магазин, чтобы улучшить свои навыки и получать больше ",
+            "монет за каждый клик.",
+            "   Разблокируйте новые возможности и ускорьте свой прогресс.",
+            "3. Планеты и Ресурсы: Исследуйте различные планеты и собирайте ресурсы. На всех планетах ",
+            "свои ресурсы - обсидиан, медь, метан, аметисты.",
+            "   Чем дальше планет от звезды, тем шахты на ней эффективнее, но дороже. Улучшайте шахты ",
+            "для увеличения дохода.",
+            "4. Автоматизация: Разблокируйте возможность автоматического заработка. Постройте шахты, которые ",
+            "будут приносить монеты даже в вашем отсутствии.",
+            "5. Управляйте Ресурсами: Тщательно распределяйте ресурсы и принимайте стратегические решения ",
+            "для оптимизации своей космической империи.",
+            "",
+            "Подсказка: ",
+            "Чем дальше вы продвигаетесь, тем больше возможностей и улучшений становится доступными.",
+            "Не забывайте инвестировать в то, что приносит наибольший доход.",
+            "",
+            "Приятного путешествия по космосу и удачи в достижении максимального космического баланса!"
+        ]
+
+    def draw(self, screen):
+        # Отображение текста
+        text_height = 20
+        for line in self.instruction_text:
+            text_render = self.font.render(line, True, (255, 255, 255))
+            screen.blit(text_render, (30, text_height))
+            text_height += 20
+
+
 # Класс для предметов в магазине
 class ShopItem:
     def __init__(self, name, base_click_value, base_cost):
@@ -654,6 +698,8 @@ class PlanetScreenState:
                     return "return_to_main_menu"
                 if self.shop_button_rect.collidepoint(event.pos):
                     return "shop"
+                if self.help_button_rect.collidepoint(event.pos):
+                    return "instruction"
 
     def update_increment(self, point_index):
         # Получаем уровень точки
@@ -745,6 +791,7 @@ class PlanetScreenState:
 
 
 shop_menu = ShopScene()
+instruction = InstructionScreen()
 game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
@@ -765,6 +812,8 @@ while running:
                 current_state = settings_menu
             elif result == "shop":
                 current_state = shop_menu
+            elif result == "instruction":
+                current_state = instruction
         elif current_state == settings_menu:
             if result == "main_menu" or result == "close_settings":
                 current_state = game_state
@@ -775,6 +824,8 @@ while running:
                 current_state = game_state
             elif result == "shop":
                 current_state = shop_menu
+            elif result == "instruction":
+                current_state = instruction
 
     current_state.update()
 
