@@ -59,10 +59,10 @@ class GameState:
         return self.selected_planet
 
     def switch_to_planet_screen(self, planet_id):
-        global current_scene
+        global current_state
         # self.current_state = PlanetScreenState(planet_id, self)
         self.planet_screen_active = True
-        current_scene = PlanetScreenState(planet_id, self)
+        current_state = PlanetScreenState(planet_id, self)
 
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
@@ -511,8 +511,8 @@ class ShopScene(Scene):
         self.shop.purchase_item(item_index)
 
     def go_back(self):
-        global current_scene
-        current_scene = game_state
+        global current_state
+        current_state = game_state
 
     def handle_events(self, events):
         for event in events:
@@ -548,7 +548,7 @@ class ShopScene(Scene):
 class PlanetScreenState:
     def __init__(self, planet_id, current_state):
         self.planet_id = planet_id
-        self.game_state = current_state
+        self.current_state = current_state
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)
 
@@ -589,7 +589,7 @@ class PlanetScreenState:
                 if self.click_button_rect.collidepoint(event.pos):
                     print("Кнопка 'Клик' была нажата")
                     self.clicked_on_click_button = True
-                elif self.game_state.setting_button_rect.collidepoint(event.pos):
+                elif self.setting_button_rect.collidepoint(event.pos):
                     return "settings"
                 elif self.click_button_rect.collidepoint(event.pos):
                     self.clicked_on_click_button = True
@@ -604,7 +604,7 @@ class PlanetScreenState:
 
         # Обновление money при клике
         if self.clicked_on_click_button:
-            self.game_state.update_money(self.money_click_increment)
+            self.current_state.update_money(self.money_click_increment)
             self.clicked_on_click_button = False
 
     def draw(self, screen):
@@ -644,12 +644,11 @@ class PlanetScreenState:
         display_score = self.font_vivid_orange.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
         screen.blit(display_score, (55, height - 75))
 
-
 shop_menu = ShopScene()
 game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
-current_scene = game_state
+current_state = game_state
 
 while running:
     events = pygame.event.get()
@@ -659,21 +658,25 @@ while running:
             running = False
 
     # Обработка событий и переключение сцен
-    result = current_scene.handle_events(events)
+    result = current_state.handle_events(events)
     if result:
-        if current_scene == game_state:
+        if current_state == game_state:
             if result == "settings":
-                current_scene = settings_menu
+                current_state = settings_menu
             elif result == "shop":
-                current_scene = shop_menu
-        elif current_scene == settings_menu:
+                current_state = shop_menu
+        elif current_state == settings_menu:
             if result == "main_menu" or result == "close_settings":
-                current_scene = game_state
+                current_state = game_state
+                print(1)
+        else:
+            if result == "settings":
+                current_state = settings_menu
 
-    current_scene.update()
+    current_state.update()
 
     screen.blit(background_image, (0, 0))
-    current_scene.draw(screen)
+    current_state.draw(screen)
 
     pygame.event.pump()
     pygame.display.flip()
