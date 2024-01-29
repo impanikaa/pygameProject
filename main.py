@@ -61,7 +61,7 @@ class GameState:
     def switch_to_planet_screen(self, planet_id):
         global current_state
         # self.current_state = PlanetScreenState(planet_id, self)
-        self.planet_screen_active = True
+        # self.planet_screen_active = True
         current_state = PlanetScreenState(planet_id, self)
 
     def set_click_state(self, state):
@@ -668,7 +668,6 @@ while running:
         elif current_state == settings_menu:
             if result == "main_menu" or result == "close_settings":
                 current_state = game_state
-                print(1)
         else:
             if result == "settings":
                 current_state = settings_menu
