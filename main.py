@@ -77,13 +77,10 @@ class GameState:
             else:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.current_state.shop_button_rect.collidepoint(event.pos):
-                        # Добавьте здесь действия для нажатия на кнопку "Магазин"
                         return "shop"
                     elif self.current_state.help_button_rect.collidepoint(event.pos):
-                        # Добавьте здесь действия для нажатия на кнопку "Помощь"
                         pass
                     elif self.current_state.setting_button_rect.collidepoint(event.pos):
-                        # Добавьте здесь действия для нажатия на кнопку "Настройки"
                         return "settings"
                     elif self.current_state.planet_1_rect.collidepoint(event.pos):
                         self.set_selected_planet(1)
@@ -564,6 +561,11 @@ class PlanetScreenState:
         self.font_black = pygame.font.SysFont(None, 32)
         self.font_vivid_orange = pygame.font.SysFont(None, 38)
 
+        self.return_button_rect = pygame.Rect(30, 20, 65, 65)
+        self.return_button_color = vivid_orange
+        self.return_button_corner_radius = 10
+        self.return_button_icon = pygame.image.load("data/back.png")
+
         self.shop_button_rect = pygame.Rect(110, 20, 200, 65)
         self.shop_button_color = vivid_orange
         self.shop_button_corner_radius = 10
@@ -587,10 +589,13 @@ class PlanetScreenState:
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if self.click_button_rect.collidepoint(event.pos):
-                    print("Кнопка 'Клик' была нажата")
                     self.clicked_on_click_button = True
                 elif self.setting_button_rect.collidepoint(event.pos):
                     return "settings"
+                elif self.return_button_rect.collidepoint(event.pos):
+                    return "return_to_main_menu"
+                if self.shop_button_rect.collidepoint(event.pos):
+                    return "shop"
 
     def update(self):
         # Обновление времени
@@ -635,12 +640,20 @@ class PlanetScreenState:
         text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
         screen.blit(text_click, text_click_rect)
 
+        # Отрисовка кнопки "Назад"
+        pygame.draw.rect(screen, self.return_button_color, self.return_button_rect,
+                         border_radius=self.return_button_corner_radius)
+        screen.blit(self.return_button_icon, (
+            self.return_button_rect.centerx - self.return_button_icon.get_width() // 2,
+            self.return_button_rect.centery - self.return_button_icon.get_height() // 2))
+
         # Отрисовка счета
         screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (55, height - 115))
         display_score = self.font_vivid_orange.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
         screen.blit(display_score, (55, height - 75))
+
 
 shop_menu = ShopScene()
 game_state = GameState()
@@ -669,6 +682,10 @@ while running:
         else:
             if result == "settings":
                 current_state = settings_menu
+            elif result == "return_to_main_menu":
+                current_state = game_state
+            elif result == "shop":
+                current_state = shop_menu
 
     current_state.update()
 
