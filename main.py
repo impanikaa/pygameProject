@@ -65,6 +65,7 @@ class GameState:
     def auto_update_money(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_money_update_time >= self.money_update_interval:
+            print(self.increment)
             self.update_money(self.increment, 0)
             self.last_money_update_time = current_time
 
@@ -85,8 +86,6 @@ class GameState:
 
     def switch_to_planet_screen(self, planet_id):
         global current_state
-        # self.current_state = PlanetScreenState(planet_id, self)
-        # self.planet_screen_active = True
         if planet_id == 1:
             current_state = planet_1
         if planet_id == 2:
@@ -99,38 +98,32 @@ class GameState:
     def set_click_state(self, state):
         self.current_state.set_click_state(state)
 
-    # def switch_to_settings(self):
-
     def handle_events(self, events):
         for event in events:
-            if self.planet_screen_active:
-                pass
-                # self.current_state.handle_events(event)
-            else:
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    if self.current_state.shop_button_rect.collidepoint(event.pos):
-                        return "shop"
-                    if self.current_state.help_button_rect.collidepoint(event.pos):
-                        return "instruction"
-                    elif self.current_state.help_button_rect.collidepoint(event.pos):
-                        pass
-                    elif self.current_state.setting_button_rect.collidepoint(event.pos):
-                        return "settings"
-                    elif self.current_state.planet_1_rect.collidepoint(event.pos):
-                        self.set_selected_planet(1)
-                        self.switch_to_planet_screen(1)
-                    elif self.current_state.planet_2_rect.collidepoint(event.pos):
-                        self.set_selected_planet(2)
-                        self.switch_to_planet_screen(2)
-                    elif self.current_state.planet_3_rect.collidepoint(event.pos):
-                        self.set_selected_planet(3)
-                        self.switch_to_planet_screen(3)
-                    elif self.current_state.planet_4_rect.collidepoint(event.pos):
-                        self.set_selected_planet(4)
-                        self.switch_to_planet_screen(4)
-                    elif self.current_state.click_button_rect.collidepoint(event.pos):
-                        self.set_click_state(True)
-                        self.current_state.clicked_on_click_button = True
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if self.current_state.shop_button_rect.collidepoint(event.pos):
+                    return "shop"
+                if self.current_state.help_button_rect.collidepoint(event.pos):
+                    return "instruction"
+                elif self.current_state.help_button_rect.collidepoint(event.pos):
+                    pass
+                elif self.current_state.setting_button_rect.collidepoint(event.pos):
+                    return "settings"
+                elif self.current_state.planet_1_rect.collidepoint(event.pos):
+                    self.set_selected_planet(1)
+                    self.switch_to_planet_screen(1)
+                elif self.current_state.planet_2_rect.collidepoint(event.pos):
+                    self.set_selected_planet(2)
+                    self.switch_to_planet_screen(2)
+                elif self.current_state.planet_3_rect.collidepoint(event.pos):
+                    self.set_selected_planet(3)
+                    self.switch_to_planet_screen(3)
+                elif self.current_state.planet_4_rect.collidepoint(event.pos):
+                    self.set_selected_planet(4)
+                    self.switch_to_planet_screen(4)
+                elif self.current_state.click_button_rect.collidepoint(event.pos):
+                    self.set_click_state(True)
+                    self.current_state.clicked_on_click_button = True
 
     def update(self):
         self.auto_update_money()
@@ -710,6 +703,7 @@ class PlanetScreenState:
                 for i, position in enumerate(self.point_positions):
                     rect = pygame.Rect(position[0], position[1], 70, 100)
                     if rect.collidepoint(event.pos) and not self.point_click_processed[i]:
+                        print(i)
                         buy = self.update_increment(i)
                         print(f"Clicked on point {i + 1}")
                         if buy:
@@ -730,7 +724,7 @@ class PlanetScreenState:
         point_level = self.point_levels[point_index]
 
         # Проверяем, хватает ли денег на обновление уровня точки
-        if game_state.get_money() >= self.cost_point:
+        if self.current_state.get_money() >= self.cost_point:
             self.point_levels[point_index] += 1
             if self.planet_id == 4:
                 self.current_state.update_increment(point_level * 1)
@@ -860,6 +854,7 @@ while running:
             current_state = game_state
             game_state_prev = p
 
+    game_state.auto_update_money()
     current_state.update()
 
     screen.blit(background_image, (0, 0))
