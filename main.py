@@ -50,8 +50,11 @@ class GameState:
     def get_money(self):
         return self.money
 
-    def update_money(self, multiplier):
-        self.money += self.increment_click * multiplier
+    def update_money(self, multiplier, add):
+        if add:
+            self.money += self.increment_click * multiplier
+        else:
+            self.money += multiplier
 
     def get_increment(self):
         return self.increment
@@ -62,7 +65,7 @@ class GameState:
     def auto_update_money(self):
         current_time = pygame.time.get_ticks()
         if current_time - self.last_money_update_time >= self.money_update_interval:
-            self.update_money(self.increment)
+            self.update_money(self.increment, 0)
             self.last_money_update_time = current_time
 
     def get_increment_click(self):
@@ -412,7 +415,7 @@ class GameScreenState:
 
         # Обновление money при клике
         if self.clicked_on_click_button:
-            game_state.update_money(1)
+            game_state.update_money(1, 1)
             self.clicked_on_click_button = False
 
     def handle_events(self, events):
@@ -645,7 +648,7 @@ class Shop:
         shop = game_state.get_shop()
         item = self.items[item_index]
         if game_state.get_money() >= item.cost:
-            game_state.update_money(-shop.items[item_index].cost)
+            game_state.update_money(-shop.items[item_index].cost * (item.level + 1), 0)
             game_state.update_increment_click(shop.items[item_index].click_value)
             item.upgrade()
 
@@ -787,8 +790,10 @@ class PlanetScreenState:
                     if rect.collidepoint(event.pos) and not self.point_click_processed[i]:
                         click_sound.play()
                         self.update_increment(i)
+                        buy = self.update_increment(i)
                         print(f"Clicked on point {i + 1}")
-                        self.point_click_processed[i] = True
+                        if buy:
+                            self.point_click_processed[i] = True
                 if self.click_button_rect.collidepoint(event.pos):
                     self.clicked_on_click_button = True
                 elif self.setting_button_rect.collidepoint(event.pos):
@@ -815,10 +820,13 @@ class PlanetScreenState:
                 self.current_state.update_increment(point_level * 50)
             elif self.planet_id == 1:
                 self.current_state.update_increment(point_level * 100)
-            game_state.update_money(-self.cost_point)
+            game_state.update_money(-self.cost_point * (self.point_levels[point_index]), 0)
             print(f"Point {point_index} upgraded to level {self.point_levels[point_index]}")
+            buy = True
         else:
             print("Not enough money to upgrade the point")
+            buy = False
+        return buy
 
     def update(self):
         # Обновление времени
@@ -830,7 +838,7 @@ class PlanetScreenState:
 
         # Обновление money при клике
         if self.clicked_on_click_button:
-            self.current_state.update_money(1)
+            self.current_state.update_money(1, 1)
             self.clicked_on_click_button = False
 
     def draw(self, screen):
