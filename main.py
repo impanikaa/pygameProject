@@ -801,21 +801,14 @@ class PlanetScreenState:
             self.point_images = [pygame.image.load(f"data/icons/obsidian_{i + 1}.png") for i in range(6)]
         self.point_levels = [0, 0, 0]
 
-        self.point_click_processed = [False] * len(self.point_positions)
-
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
                 for i, position in enumerate(self.point_positions):
                     rect = pygame.Rect(position[0], position[1], 70, 100)
-                    if rect.collidepoint(event.pos) and not self.point_click_processed[i]:
+                    if rect.collidepoint(event.pos):
                         click_sound.play()
                         self.update_increment(i)
-                        print(i)
-                        buy = self.update_increment(i)
-                        print(f"Clicked on point {i + 1}")
-                        if buy:
-                            self.point_click_processed[i] = True
                 if self.click_button_rect.collidepoint(event.pos):
                     self.clicked_on_click_button = True
                 elif self.setting_button_rect.collidepoint(event.pos):
@@ -828,27 +821,14 @@ class PlanetScreenState:
                     return "instruction"
 
     def update_increment(self, point_index):
-        # Получаем уровень точки
-        point_level = self.point_levels[point_index]
 
         # Проверяем, хватает ли денег на обновление уровня точки
         if self.current_state.get_money() >= self.cost_point:
+            # Получаем уровень точки
             self.point_levels[point_index] += 1
-            if self.planet_id == 4:
-                self.current_state.update_increment(point_level * 1)
-            elif self.planet_id == 3:
-                self.current_state.update_increment(point_level * 10)
-            elif self.planet_id == 2:
-                self.current_state.update_increment(point_level * 50)
-            elif self.planet_id == 1:
-                self.current_state.update_increment(point_level * 100)
-            game_state.update_money(-self.cost_point * (self.point_levels[point_index]), 0)
-            print(f"Point {point_index} upgraded to level {self.point_levels[point_index]}")
-            buy = True
-        else:
-            print("Not enough money to upgrade the point")
-            buy = False
-        return buy
+            inc = [1, 10, 50, 100]
+            game_state.update_increment(inc[-self.planet_id])
+            game_state.update_money(-self.cost_point, 0)
 
     def update(self):
         # Обновление времени
