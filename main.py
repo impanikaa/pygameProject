@@ -18,6 +18,11 @@ space_color = (0, 2, 18)
 dark_grey = (70, 70, 70)
 
 
+def draw_image(name, coords):
+    image = pygame.image.load('data/' + name)
+    screen.blit(image, coords)
+
+
 class Scene:
     def __init__(self):
         pass
@@ -109,7 +114,7 @@ class GameState:
                         return "shop"
                     elif self.current_state.help_button_rect.collidepoint(event.pos):
                         return "instruction"
-                    elif self.current_state.setting_button_rect.collidepoint(event.pos):
+                    elif self.current_state.settings_button_rect.collidepoint(event.pos):
                         return "settings"
                     elif self.current_state.planet_1_rect.collidepoint(event.pos):
                         click_sound.play()
@@ -138,7 +143,7 @@ class GameState:
                     return "instruction"
                 elif self.current_state.help_button_rect.collidepoint(event.pos):
                     pass
-                elif self.current_state.setting_button_rect.collidepoint(event.pos):
+                elif self.current_state.settings_button_rect.collidepoint(event.pos):
                     return "settings"
                 elif self.current_state.planet_1_rect.collidepoint(event.pos):
                     self.set_selected_planet(1)
@@ -347,26 +352,31 @@ class SettingsMenu(Scene):
 class GameScreenState:
     def __init__(self):
         self.font = pygame.font.SysFont(None, 32)
-        self.shop_button_rect = pygame.Rect(30, 20, 200, 65)
-        self.shop_button_color = vivid_orange
-        self.shop_button_corner_radius = 10
 
-        self.help_button_rect = pygame.Rect(730, 20, 65, 65)
-        self.help_button_color = vivid_orange
-        self.help_button_corner_radius = 10
-        self.help_button_icon = pygame.image.load("data/help.png")
+        self.shop_button_rect = pygame.Rect(25, 25, 200, 65)
+        # self.shop_button_color = vivid_orange
+        # self.shop_button_corner_radius = 10
+        # self.shop_button_icon = pygame.image.load("data/shop.png")
 
-        self.setting_button_rect = pygame.Rect(810, 20, 65, 65)
-        self.setting_button_color = vivid_orange
-        self.setting_button_corner_radius = 10
-        self.setting_button_icon = pygame.image.load("data/setting.png")
+        self.help_button_rect = pygame.Rect(720, 25, 65, 65)
+        # self.help_button_color = vivid_orange
+        # self.help_button_corner_radius = 10
+        # self.help_button_icon = pygame.image.load("data/help.png")
+
+        self.settings_button_rect = pygame.Rect(810, 25, 65, 65)
+        # self.settings_button_color = vivid_orange
+        # self.settings_button_corner_radius = 10
+        # self.settings_button_icon = pygame.image.load("data/settings.png")
+
         self.money = 0
-        self.money_color = vivid_orange
-        self.money_border_icon = pygame.image.load("data/border.png")
+        self.money_border = (25, 455)
+        # self.money_color = vivid_orange
+        # self.money_border_icon = pygame.image.load("data/border.png")
 
-        self.click_button_rect = pygame.Rect(715, 420, 160, 160)
-        self.click_button_color = vivid_orange
-        self.click_button_corner_radius = self.click_button_rect.width // 2
+        self.click_button_rect = pygame.Rect(715, 415, 160, 160)
+        # self.click_button_color = vivid_orange
+        # self.click_button_corner_radius = self.click_button_rect.width // 2
+        # self.click_border_icon = pygame.image.load("data/click.png")
         self.clicked_on_click_button = False
 
         self.font_black = pygame.font.SysFont(None, 32)
@@ -483,43 +493,50 @@ class GameScreenState:
         self.planet_4_rect.center = (self.planet4_x, self.planet4_y)
 
     def draw(self, screen):
-        pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
-                         border_radius=self.shop_button_corner_radius)
-        text1 = self.font_black.render("Магазин", True, space_color)
-        text1_rect = text1.get_rect(center=self.shop_button_rect.center)
-        screen.blit(text1, text1_rect)
+        draw_image('shop.png', self.shop_button_rect)
+        # screen.blit(self.shop_button_icon, self.shop_button_rect)
+        # pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
+        #                  border_radius=self.shop_button_corner_radius)
+        # text1 = self.font_black.render("Магазин", True, space_color)
+        # text1_rect = text1.get_rect(center=self.shop_button_rect.center)
+        # screen.blit(text1, text1_rect)
 
-        pygame.draw.rect(screen, self.help_button_color, self.help_button_rect,
-                         border_radius=self.help_button_corner_radius)
-        screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2,
-                                            self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
+        draw_image('help.png', self.help_button_rect)
+        # pygame.draw.rect(screen, self.help_button_color, self.help_button_rect,
+        #                  border_radius=self.help_button_corner_radius)
+        # screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2,
+        #                                     self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
 
-        pygame.draw.rect(screen, self.setting_button_color, self.setting_button_rect,
-                         border_radius=self.setting_button_corner_radius)
-        screen.blit(self.setting_button_icon, (
-            self.setting_button_rect.centerx - self.setting_button_icon.get_width() // 2,
-            self.setting_button_rect.centery - self.setting_button_icon.get_height() // 2))
+        draw_image('settings.png', self.settings_button_rect)
+        # pygame.draw.rect(screen, self.settings_button_color, self.settings_button_rect,
+        #                  border_radius=self.settings_button_corner_radius)
+        # screen.blit(self.settings_button_icon, (
+        #     self.settings_button_rect.centerx - self.settings_button_icon.get_width() // 2,
+        #     self.settings_button_rect.centery - self.settings_button_icon.get_height() // 2))
 
         star_rect = self.star_image.get_rect(topleft=(475, 270))
         screen.blit(self.star_image, star_rect)
 
+        draw_image('click.png', self.click_button_rect)
         # Отрисовка круглой кнопки "Клик"
-        pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
-                           self.click_button_corner_radius)
-        text_click = pygame.font.SysFont(None, 32).render("Клик", True, space_color)
-        text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
-        screen.blit(text_click, text_click_rect)
+        # screen.blit(self.click_border_icon, self.click_button_rect)
+        # pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
+        #                    self.click_button_corner_radius)
+        # text_click = pygame.font.SysFont(None, 32).render("Клик", True, space_color)
+        # text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
+        # screen.blit(text_click, text_click_rect)
 
         # отрисовка счёта
-        screen.blit(self.money_border_icon, (30, height - 140))
+        draw_image('border.png', self.money_border)
+        # screen.blit(self.money_border_icon, (30, height - 140))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
-        screen.blit(text_money, (55, height - 122))
+        screen.blit(text_money, (50, height - 127))
         display_score = self.font.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
-        screen.blit(display_score, (55, height - 87))
+        screen.blit(display_score, (50, height - 92))
         display_inc_click = self.font.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True, vivid_orange)
-        screen.blit(display_inc_click, (55, height - 57))
+        screen.blit(display_inc_click, (50, height - 62))
         display_inc = self.font.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
-        screen.blit(display_inc, (170, height - 57))
+        screen.blit(display_inc, (165, height - 62))
 
         # Обновление углов планет
         self.update()
@@ -691,7 +708,7 @@ class ShopScene(Scene):
                    action=lambda i=i: self.purchase_item(i))
             for i in range(len(self.shop.items))
         ]
-        self.return_button_rect = pygame.Rect(30, 20, 200, 50)
+        self.back_button_rect = pygame.Rect(30, 20, 200, 50)
         self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться назад")
 
         self.money_color = vivid_orange
@@ -711,7 +728,7 @@ class ShopScene(Scene):
                 for button in self.shop_buttons:
                     button.handle_click(x, y)
                 self.exit_button.handle_click(x, y)
-                if self.return_button_rect.collidepoint(event.pos):
+                if self.back_button_rect.collidepoint(event.pos):
                     return "back"
 
     def draw(self, screen):
@@ -761,28 +778,35 @@ class PlanetScreenState:
         self.font_black = pygame.font.SysFont(None, 32)
         self.font_vivid_orange = pygame.font.SysFont(None, 38)
 
-        self.return_button_rect = pygame.Rect(30, 20, 65, 65)
-        self.return_button_color = vivid_orange
-        self.return_button_corner_radius = 10
-        self.return_button_icon = pygame.image.load("data/back.png")
+        self.back_button_rect = pygame.Rect(25, 115, 65, 65)
+        # self.return_button_color = vivid_orange
+        # self.return_button_corner_radius = 10
+        # self.return_button_icon = pygame.image.load("data/back.png")
 
-        self.shop_button_rect = pygame.Rect(110, 20, 200, 65)
-        self.shop_button_color = vivid_orange
-        self.shop_button_corner_radius = 10
+        self.shop_button_rect = pygame.Rect(25, 25, 200, 65)
+        # self.shop_button_color = vivid_orange
+        # self.shop_button_corner_radius = 10
+        # self.shop_button_icon = pygame.image.load("data/shop.png")
 
-        self.help_button_rect = pygame.Rect(730, 20, 65, 65)
-        self.help_button_color = vivid_orange
-        self.help_button_corner_radius = 10
-        self.help_button_icon = pygame.image.load("data/help.png")
+        self.help_button_rect = pygame.Rect(720, 25, 65, 65)
+        # self.help_button_color = vivid_orange
+        # self.help_button_corner_radius = 10
+        # self.help_button_icon = pygame.image.load("data/help.png")
 
-        self.setting_button_rect = pygame.Rect(810, 20, 65, 65)
-        self.setting_button_color = vivid_orange
-        self.setting_button_corner_radius = 10
-        self.setting_button_icon = pygame.image.load("data/setting.png")
+        self.settings_button_rect = pygame.Rect(810, 25, 65, 65)
+        # self.settings_button_color = vivid_orange
+        # self.settings_button_corner_radius = 10
+        # self.settings_button_icon = pygame.image.load("data/settings.png")
 
-        self.click_button_rect = pygame.Rect(715, 420, 160, 160)
-        self.click_button_color = vivid_orange
-        self.click_button_corner_radius = self.click_button_rect.width // 2
+        # self.money = 0
+        # self.money_border = (25, 455)
+        # self.money_color = vivid_orange
+        # self.money_border_icon = pygame.image.load("data/border.png")
+
+        self.click_button_rect = pygame.Rect(715, 415, 160, 160)
+        # self.click_button_color = vivid_orange
+        # self.click_button_corner_radius = self.click_button_rect.width // 2
+        # self.click_border_icon = pygame.image.load("data/click.png")
         self.clicked_on_click_button = False
 
         # Инициализация точек
@@ -811,9 +835,9 @@ class PlanetScreenState:
                         self.update_increment(i)
                 if self.click_button_rect.collidepoint(event.pos):
                     self.clicked_on_click_button = True
-                elif self.setting_button_rect.collidepoint(event.pos):
+                elif self.settings_button_rect.collidepoint(event.pos):
                     return "settings"
-                elif self.return_button_rect.collidepoint(event.pos):
+                elif self.back_button_rect.collidepoint(event.pos):
                     return "menu"
                 if self.shop_button_rect.collidepoint(event.pos):
                     return "shop"
@@ -849,47 +873,54 @@ class PlanetScreenState:
 
         screen.blit(self.planet_image, (planet_x, planet_y))
 
-        pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
-                         border_radius=self.shop_button_corner_radius)
-        text1 = self.font_black.render("Магазин", True, space_color)
-        text1_rect = text1.get_rect(center=self.shop_button_rect.center)
-        screen.blit(text1, text1_rect)
+        draw_image('shop.png', self.shop_button_rect)
+        # screen.blit(self.shop_button_icon, self.shop_button_rect)
+        # pygame.draw.rect(screen, self.shop_button_color, self.shop_button_rect,
+        #                  border_radius=self.shop_button_corner_radius)
+        # text1 = self.font_black.render("Магазин", True, space_color)
+        # text1_rect = text1.get_rect(center=self.shop_button_rect.center)
+        # screen.blit(text1, text1_rect)
 
-        pygame.draw.rect(screen, self.help_button_color, self.help_button_rect,
-                         border_radius=self.help_button_corner_radius)
-        screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2,
-                                            self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
+        draw_image('help.png', self.help_button_rect)
+        # pygame.draw.rect(screen, self.help_button_color, self.help_button_rect,
+        #                  border_radius=self.help_button_corner_radius)
+        # screen.blit(self.help_button_icon, (self.help_button_rect.centerx - self.help_button_icon.get_width() // 2,
+        #                                     self.help_button_rect.centery - self.help_button_icon.get_height() // 2))
 
-        pygame.draw.rect(screen, self.setting_button_color, self.setting_button_rect,
-                         border_radius=self.setting_button_corner_radius)
-        screen.blit(self.setting_button_icon, (
-            self.setting_button_rect.centerx - self.setting_button_icon.get_width() // 2,
-            self.setting_button_rect.centery - self.setting_button_icon.get_height() // 2))
+        draw_image('settings.png', self.settings_button_rect)
+        # pygame.draw.rect(screen, self.settings_button_color, self.settings_button_rect,
+        #                  border_radius=self.settings_button_corner_radius)
+        # screen.blit(self.settings_button_icon, (
+        #     self.settings_button_rect.centerx - self.settings_button_icon.get_width() // 2,
+        #     self.settings_button_rect.centery - self.settings_button_icon.get_height() // 2))
 
         # Отрисовка круглой кнопки "Клик"
-        pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
-                           self.click_button_corner_radius)
-        text_click = pygame.font.SysFont(None, 32).render("Клик", True, space_color)
-        text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
-        screen.blit(text_click, text_click_rect)
+        draw_image('click.png', self.click_button_rect)
+        # screen.blit(self.click_border_icon, self.click_button_rect)
+        # pygame.draw.circle(screen, self.click_button_color, self.click_button_rect.center,
+        #                    self.click_button_corner_radius)
+        # text_click = pygame.font.SysFont(None, 32).render("Клик", True, space_color)
+        # text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
+        # screen.blit(text_click, text_click_rect)
 
         # Отрисовка кнопки "Назад"
-        pygame.draw.rect(screen, self.return_button_color, self.return_button_rect,
-                         border_radius=self.return_button_corner_radius)
-        screen.blit(self.return_button_icon, (
-            self.return_button_rect.centerx - self.return_button_icon.get_width() // 2,
-            self.return_button_rect.centery - self.return_button_icon.get_height() // 2))
+        draw_image('back.png', self.back_button_rect)
+        # pygame.draw.rect(screen, self.return_button_color, self.return_button_rect,
+        #                  border_radius=self.return_button_corner_radius)
+        # screen.blit(self.return_button_icon, (
+        #     self.back_button_rect.centerx - self.return_button_icon.get_width() // 2,
+        #     self.back_button_rect.centery - self.return_button_icon.get_height() // 2))
 
         # Отрисовка счета
-        screen.blit(self.money_border_icon, (30, height - 140))
+        screen.blit(self.money_border_icon, (25, height - 145))
         text_money = self.font_vivid_orange.render("Ваш баланс:", True, vivid_orange)
-        screen.blit(text_money, (55, height - 122))
+        screen.blit(text_money, (50, height - 127))
         display_score = self.font.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
-        screen.blit(display_score, (55, height - 87))
+        screen.blit(display_score, (50, height - 92))
         display_inc_click = self.font.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True, vivid_orange)
-        screen.blit(display_inc_click, (55, height - 57))
+        screen.blit(display_inc_click, (50, height - 62))
         display_inc = self.font.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
-        screen.blit(display_inc, (170, height - 57))
+        screen.blit(display_inc, (165, height - 62))
 
         for i, position in enumerate(self.point_positions):
             rect = pygame.Rect(position[0], position[1], 70, 100)
