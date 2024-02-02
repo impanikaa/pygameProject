@@ -753,17 +753,23 @@ class PlanetScreenState:
         self.point_positions = [(410, 100), (480, 160), (550, 100)]
         if planet_id == 1:
             self.cost_point = 1500
-            self.point_images = [pygame.image.load(f"data/icons/ametist_{i + 1}.png") for i in range(6)]
+            self.point_images = [pygame.image.load(f"data/icons/ametist_{i}.png") for i in range(8)]
         elif planet_id == 2:
             self.cost_point = 750
-            self.point_images = [pygame.image.load(f"data/icons/metan_{i + 1}.png") for i in range(6)]
+            self.point_images = [pygame.image.load(f"data/icons/metan_{i}.png") for i in range(8)]
         elif planet_id == 3:
             self.cost_point = 500
-            self.point_images = [pygame.image.load(f"data/icons/copper_{i + 1}.png") for i in range(6)]
+            self.point_images = [pygame.image.load(f"data/icons/copper_{i}.png") for i in range(8)]
         elif planet_id == 4:
             self.cost_point = 10
-            self.point_images = [pygame.image.load(f"data/icons/obsidian_{i + 1}.png") for i in range(6)]
+            self.point_images = [pygame.image.load(f"data/icons/obsidian_{i}.png") for i in range(8)]
         self.point_levels = [0, 0, 0]
+        self.p = self.point_levels.copy()
+
+        self.rects = []
+        for i in range(len(self.point_levels)):
+            rect = pygame.Rect(self.point_positions[i][0], self.point_positions[i][1], 70, 100)
+            self.rects.append(rect)
 
     def handle_events(self, events):
         for event in events:
@@ -779,6 +785,11 @@ class PlanetScreenState:
                 elif self.click_button_rect.collidepoint(event.pos):
                     click_sound.play()
                     self.clicked_on_click_button = True
+                else:
+                    for i, x in enumerate(self.rects):
+                        if x.collidepoint(pygame.mouse.get_pos()) and self.point_levels[i] <= 6:
+                            self.update_increment(i)
+                            break
 
     def update_increment(self, point_index):
 
@@ -786,6 +797,7 @@ class PlanetScreenState:
         if self.current_state.get_money() >= self.cost_point:
             # Получаем уровень точки
             self.point_levels[point_index] += 1
+            self.p = self.point_levels.copy()
             inc = [1, 10, 50, 100]
             game_state.update_increment(inc[-self.planet_id])
             game_state.update_money(-self.cost_point, 0)
@@ -812,6 +824,17 @@ class PlanetScreenState:
                 break
         if not a:
             self.draw_icons = [0 for i in range(len(self.draw_rects))]
+
+        b = 0
+        for i, x in enumerate(self.rects):
+            if x.collidepoint(pygame.mouse.get_pos()):
+                self.point_levels = self.p.copy()
+                self.point_levels[i] += 1
+                b = 1
+                print(self.p.copy())
+                break
+        if not b:
+            self.point_levels = self.p.copy()
 
     def draw(self, screen):
         planet_x = 340
@@ -847,11 +870,7 @@ class PlanetScreenState:
         screen.blit(display_inc, (165, height - 62))
 
         for i, position in enumerate(self.point_positions):
-            rect = pygame.Rect(position[0], position[1], 70, 100)
-            if self.point_levels[i] == 0:
-                screen.blit(self.point_images[i + 3], rect.topleft)
-            else:
-                screen.blit(self.point_images[i], rect.topleft)
+            screen.blit(self.point_images[self.point_levels[i]], self.rects[i].topleft)
 
 
 pygame.mixer.music.load("data/startrack.mp3")
