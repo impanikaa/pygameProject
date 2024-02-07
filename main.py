@@ -131,30 +131,7 @@ class GameState:
                         click_sound.play()
                         self.set_click_state(True)
                         self.current_state.clicked_on_click_button = True
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                if self.current_state.shop_button_rect.collidepoint(event.pos):
-                    return "shop"
-                if self.current_state.help_button_rect.collidepoint(event.pos):
-                    return "instruction"
-                elif self.current_state.help_button_rect.collidepoint(event.pos):
-                    pass
-                elif self.current_state.setting_button_rect.collidepoint(event.pos):
-                    return "settings"
-                elif self.current_state.planet_1_rect.collidepoint(event.pos):
-                    self.set_selected_planet(1)
-                    self.switch_to_planet_screen(1)
-                elif self.current_state.planet_2_rect.collidepoint(event.pos):
-                    self.set_selected_planet(2)
-                    self.switch_to_planet_screen(2)
-                elif self.current_state.planet_3_rect.collidepoint(event.pos):
-                    self.set_selected_planet(3)
-                    self.switch_to_planet_screen(3)
-                elif self.current_state.planet_4_rect.collidepoint(event.pos):
-                    self.set_selected_planet(4)
-                    self.switch_to_planet_screen(4)
-                elif self.current_state.click_button_rect.collidepoint(event.pos):
-                    self.set_click_state(True)
-                    self.current_state.clicked_on_click_button = True
+
 
     def update(self):
         self.auto_update_money()
