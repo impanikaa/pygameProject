@@ -716,7 +716,7 @@ class Shop:
         shop_info = []
         for item in self.items:
             status = "Куплено" if item.purchased else f"Стоимость: {item.cost} монет"
-            info = f"{item.name} (Уровень {item.level}): +{item.click_value} за клик, {status}"
+            info = f"{item.name} (Уровень {item.level}): +{item.click_value - item.base_click_value} за клик, {status}"
             shop_info.append(info)
         return shop_info
 
