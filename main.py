@@ -1,15 +1,73 @@
 import sys
-
 import pygame
 import math
+import sqlite3
+
+
+def enter_game(player_id):
+    # Загрузка данных
+    player_db = PlayerDatabase()
+    loaded_data = player_db.load_player_data(player_id)
+    if loaded_data:
+        money, increment, increment_click, shop_data = loaded_data
+        # Используйте данные для установки состояния игры
+        game_state.set_money(money)
+        game_state.set_increment(increment)
+        game_state.set_increment_click(increment_click)
+    # продолжить здесь
+
+
+def exit_game():
+    # Сохранение данных
+    player_db = PlayerDatabase()
+    player_id = 1
+    money = game_state.get_money()
+    increment = game_state.get_increment()
+    increment_click = game_state.get_increment_click()
+    shop_data = game_state.get_shop()  # Используйте метод для получения данных магазина
+    player_db.save_player_data(player_id, money, increment, increment_click, shop_data)
+
+    # Завершение игры
+    pygame.quit()
+    sys.exit()
+
+
+# Класс для хранения данных игрока и работы с базой данных
+class PlayerDatabase:
+    def __init__(self, db_path="player_data.db"):
+        self.conn = sqlite3.connect(db_path)
+        self.cursor = self.conn.cursor()
+        self.create_table()
+
+    def create_table(self):
+        self.cursor.execute('''
+            CREATE TABLE IF NOT EXISTS players (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                money REAL,
+                increment REAL,
+                increment_click REAL,
+                shop_data BLOB
+            )
+        ''')
+        self.conn.commit()
+
+    def save_player_data(self, player_id, money, increment, increment_click, shop_data):
+        self.cursor.execute('''
+            INSERT INTO players (id, money, increment, increment_click, shop_data)
+            VALUES (?, ?, ?, ?, ?)
+        ''', (player_id, money, increment, increment_click, shop_data))
+        self.conn.commit()
+
+    def load_player_data(self, player_id):
+        query = "SELECT * FROM players WHERE id = ?;"
+        self.cursor.execute(query, (player_id,))
+        data = self.cursor.fetchone()
+        return data
+
 
 pygame.init()
 width, height = 900, 600
 screen = pygame.display.set_mode((width, height))
-
-running = True
-
-money = 0
 
 background_image = pygame.image.load("data/background.png")
 vivid_orange = (255, 194, 38)
@@ -57,6 +115,9 @@ class GameState:
     def get_shop(self):
         return self.shop
 
+    def set_money(self, new_money):
+        self.money = new_money
+
     def get_money(self):
         return self.money
 
@@ -65,6 +126,9 @@ class GameState:
             self.money += self.increment_click * multiplier
         else:
             self.money += multiplier
+
+    def set_increment(self, new_increment):
+        self.money = new_increment
 
     def get_increment(self):
         return self.increment
@@ -77,6 +141,9 @@ class GameState:
         if current_time - self.last_money_update_time >= self.money_update_interval:
             self.update_money(self.increment, 0)
             self.last_money_update_time = current_time
+
+    def set_increment_click(self, new_increment_click):
+        self.money = new_increment_click
 
     def get_increment_click(self):
         return self.increment_click
@@ -716,9 +783,8 @@ class ShopScene(Scene):
 
 
 class PlanetScreenState:
-    def __init__(self, planet_id):
+    def __init__(self, planet_id, current_state):
         self.planet_id = planet_id
-        global current_state
         self.current_state = current_state
         self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)
@@ -887,25 +953,26 @@ class PlanetScreenState:
             screen.blit(self.point_images[self.point_levels[i]], self.rects[i].topleft)
 
 
+game_state = GameState()
 pygame.mixer.music.load("data/startrack.mp3")
-pygame.mixer.music.set_volume(0.5)  # Здесь 0.9 - это громкость от 0.0 до 1.0
+pygame.mixer.music.set_volume(0.5)
 
 pygame.mixer.init()
 click_sound = pygame.mixer.Sound("data/button.wav")
 click_sound.set_volume(0.5)
-
 shop_menu = ShopScene()
 instruction = InstructionScreen()
-game_state = GameState()
 settings_menu = SettingsMenu()
 clock = pygame.time.Clock()
 current_state = game_state
 game_state_prev = current_state
-planet_1 = PlanetScreenState(1)
-planet_2 = PlanetScreenState(2)
-planet_3 = PlanetScreenState(3)
-planet_4 = PlanetScreenState(4)
+planet_1 = PlanetScreenState(1, current_state)
+planet_2 = PlanetScreenState(2, current_state)
+planet_3 = PlanetScreenState(3, current_state)
+planet_4 = PlanetScreenState(4, current_state)
 planets = [planet_1, planet_2, planet_3, planet_4]
+
+running = True
 
 while running:
     events = pygame.event.get()
@@ -956,4 +1023,6 @@ while running:
     pygame.display.flip()
     clock.tick(60)
 
-pygame.quit()
+if __name__ == "__main__":
+    enter_game(1)
+    pygame.quit()
