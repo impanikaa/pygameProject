@@ -232,7 +232,7 @@ class SettingsOverlay:
                     pygame.quit()
                     sys.exit()
                 elif self.close_button.collidepoint(event.pos):
-                    return "back"
+                    return "back2"
                 elif self.volume_music_button.collidepoint(event.pos):
                     click_sound.play()
                     self.volume_music = max(0, min(100, (
@@ -264,7 +264,7 @@ class SettingsOverlay:
                     self.update_effects_volume()
                     self.mute_effects = False
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "back"
+                return "back2"
         return None
 
     def draw(self, screen):
@@ -361,11 +361,11 @@ class SettingsMenu(Scene):
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "back"
+                return "back2"
         result = self.settings_overlay.handle_events(events)
         if result:
-            if result == "back":
-                return "back"
+            if result == "back2":
+                return "back2"
         return None
 
     def draw(self, screen):
@@ -376,8 +376,8 @@ class GameScreenState:
     def __init__(self):
 
         self.shop_button_rect = pygame.Rect(25, 25, 200, 65)
-        self.shop_button_icon = pygame.image.load("data/shop.png")
-        self.dark_shop_button_icon = pygame.image.load("data/dark shop.png")
+        self.shop_button_icon = pygame.image.load("data/button_0.png")
+        self.dark_shop_button_icon = pygame.image.load("data/button_1.png")
 
         self.help_button_rect = pygame.Rect(720, 25, 65, 65)
         self.help_button_icon = pygame.image.load("data/help.png")
@@ -613,41 +613,18 @@ class InstructionScreen(Scene):
         self.close_button = pygame.Rect(350, 535, 200, 50)
 
         # Текст инструкции
-        self.instruction_text = [
-            "Добро пожаловать в инкрементальную игру 'Космический Кликер'!",
-            "",
-            "Цель игры: Увеличивайте свой космический баланс, нажимая на кнопку 'Клик' и автоматизируя доход.",
-            "Зарабатывайте монеты и развивайте свой космический мир.",
-            "",
-            "Основные шаги:",
-            "1. Нажимайте на Кнопку 'Клик': Чем больше кликов, тем больше монет вы зарабатываете.",
-            "   Прокачивайте этот процесс для увеличения дохода.",
-            "2. Магазин и Улучшения: Посещайте магазин, чтобы улучшить свои навыки и получать больше ",
-            "монет за каждый клик.",
-            "   Разблокируйте новые возможности и ускорьте свой прогресс.",
-            "3. Планеты и Ресурсы: Исследуйте различные планеты и собирайте ресурсы. На всех планетах ",
-            "свои ресурсы - обсидиан, медь, метан, аметисты.",
-            "   Чем дальше планет от звезды, тем шахты на ней эффективнее, но дороже. Улучшайте шахты ",
-            "для увеличения дохода.",
-            "4. Автоматизация: Разблокируйте возможность автоматического заработка. Постройте шахты, которые ",
-            "будут приносить монеты даже в вашем отсутствии.",
-            "5. Управляйте Ресурсами: Тщательно распределяйте ресурсы и принимайте стратегические решения ",
-            "для оптимизации своей космической империи.",
-            "",
-            "Подсказка: ",
-            "Чем дальше вы продвигаетесь, тем больше возможностей и улучшений становится доступными.",
-            "Не забывайте инвестировать в то, что приносит наибольший доход.",
-            "",
-            "Приятного путешествия по космосу и удачи в достижении максимального космического баланса!"
-        ]
+        with open('instructions.txt', 'r', encoding='utf-8') as file:
+            self.instruction_text = file.readlines()
+        for i, x in enumerate(self.instruction_text):
+            self.instruction_text[i] = self.instruction_text[i].replace('\n', '')
 
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
                 if self.close_button.collidepoint(event.pos):
-                    return "back"
+                    return "back2"
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_ESCAPE:
-                return "back"
+                return "back2"
         return None
 
     def draw(self, screen):
@@ -691,10 +668,10 @@ class ShopItem:
 class Shop:
     def __init__(self):
         self.items = [
-            ShopItem("Upgrade 1", base_click_value=1, base_cost=10),
-            ShopItem("Upgrade 2", base_click_value=5, base_cost=20),
-            ShopItem("Upgrade 3", base_click_value=10, base_cost=50),
-            ShopItem("Upgrade 4", base_click_value=20, base_cost=100),
+            ShopItem("Обсидиановая кирка", base_click_value=1, base_cost=10),
+            ShopItem("Медная дрель", base_click_value=5, base_cost=20),
+            ShopItem("Метановый газовик", base_click_value=10, base_cost=50),
+            ShopItem("Аметистовый экскаватор", base_click_value=20, base_cost=100),
             # Добавьте другие предметы магазина по аналогии
         ]
         self.money = 0
@@ -716,7 +693,8 @@ class Shop:
         shop_info = []
         for item in self.items:
             status = "Куплено" if item.purchased else f"Стоимость: {item.cost} монет"
-            info = f"{item.name} (Уровень {item.level}): +{item.click_value - item.base_click_value} за клик, {status}"
+            info = [f"{item.name}: +{item.base_click_value} за клик за уровень,",
+                    f"бонус предмета +{item.click_value - item.base_click_value}, {status}"]
             shop_info.append(info)
         return shop_info
 
@@ -726,16 +704,51 @@ class ShopScene(Scene):
     def __init__(self):
         super().__init__()
         self.shop = Shop()
-        self.shop_buttons = [
-            Button(30, 100 + i * 70, 200, 50, vivid_orange, f"Купить {i + 1}", "",
-                   action=lambda i=i: self.purchase_item(i))
-            for i in range(len(self.shop.items))
-        ]
-        self.back_button_rect = pygame.Rect(30, 20, 200, 50)
-        self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться назад")
+        # self.shop_buttons = [
+        #     Button(30, 100 + i * 70, 200, 50, vivid_orange, f"Купить {i + 1}", "",
+        #            action=lambda i=i: self.purchase_item(i))
+        #     for i in range(len(self.shop.items))
+        # ]
 
-        self.money_border = (25, 455)
+        self.back_button_rect = pygame.Rect(25, 25, 65, 65)
+        self.back_button_icon = pygame.image.load("data/back.png")
+        self.dark_back_button_icon = pygame.image.load("data/dark back.png")
+
+        self.help_button_rect = pygame.Rect(720, 25, 65, 65)
+        self.help_button_icon = pygame.image.load("data/help.png")
+        self.dark_help_button_icon = pygame.image.load("data/dark help.png")
+
+        self.settings_button_rect = pygame.Rect(810, 25, 65, 65)
+        self.settings_button_icon = pygame.image.load("data/settings.png")
+        self.dark_settings_button_icon = pygame.image.load("data/dark settings.png")
+
+        self.money_border = pygame.Rect(25, 455, 250, 120)
         self.money_border_icon = pygame.image.load("data/border.png")
+
+        self.draw_light_icons = [self.help_button_icon, self.settings_button_icon,
+                                 self.money_border_icon, self.back_button_icon]
+        self.draw_dark_icons = [self.dark_help_button_icon, self.dark_settings_button_icon,
+                                self.money_border_icon, self.dark_back_button_icon]
+        self.draw_icons = [False for _ in range(len(self.draw_light_icons))]
+        self.draw_rects = [self.help_button_rect, self.settings_button_rect, self.money_border,
+                           self.back_button_rect]
+        self.point_positions = [(25, 110), (25, 195), (25, 280), (25, 365)]
+        self.point_images = [pygame.image.load(f"data/button_{i}.png") for i in range(2)]
+
+        self.point_levels = [0, 0, 0, 0]
+        self.p = self.point_levels.copy()
+
+        self.rects = []
+        for i in range(len(self.point_levels)):
+            rect = pygame.Rect(self.point_positions[i][0], self.point_positions[i][1], 200, 65)
+            self.rects.append(rect)
+
+        # self.back_button_rect = pygame.Rect(25, 25, 65, 65)
+        # self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться назад")
+
+        self.shop_button_rect = pygame.Rect(25, 110, 200, 65)
+        self.shop_button_icon = pygame.image.load("data/button_0.png")
+        self.dark_shop_button_icon = pygame.image.load("data/button_1.png")
 
         global font3, font5
         self.font3 = font3
@@ -747,18 +760,46 @@ class ShopScene(Scene):
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
-                x, y = event.pos
-                for button in self.shop_buttons:
-                    button.handle_click(x, y)
-                self.exit_button.handle_click(x, y)
                 if self.back_button_rect.collidepoint(event.pos):
-                    return "back"
+                    return "back1"
+                if self.help_button_rect.collidepoint(event.pos):
+                    return "instruction"
+                if self.settings_button_rect.collidepoint(event.pos):
+                    return "settings"
+                else:
+                    for i, x in enumerate(self.rects):
+                        if x.collidepoint(pygame.mouse.get_pos()):
+                            self.purchase_item(i)
+                            break
+
+    def update(self):
+        a = 0
+        for i, x in enumerate(self.draw_rects):
+            if x.collidepoint(pygame.mouse.get_pos()):
+                self.draw_icons = [0 for i in range(len(self.draw_rects))]
+                self.draw_icons[i] = 1
+                a = 1
+                break
+        if not a:
+            self.draw_icons = [0 for i in range(len(self.draw_rects))]
+
+        b = 0
+        for i, x in enumerate(self.rects):
+            if x.collidepoint(pygame.mouse.get_pos()):
+                self.point_levels = self.p.copy()
+                self.point_levels[i] += 1
+                b = 1
+                break
+        if not b:
+            self.point_levels = self.p.copy()
 
     def draw(self, screen):
-        # screen.fill(space_color)
-        self.exit_button.draw(screen)
-        self.exit_button.draw_info(screen)
-        global money
+
+        for i in range(len(self.draw_icons)):
+            if self.draw_icons[i] == 0:
+                screen.blit(self.draw_light_icons[i], self.draw_rects[i])
+            else:
+                screen.blit(self.draw_dark_icons[i], self.draw_rects[i])
 
         screen.blit(self.money_border_icon, self.money_border)
         text_money = self.font5.render("Ваш баланс:", True, vivid_orange)
@@ -771,15 +812,19 @@ class ShopScene(Scene):
         display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
         screen.blit(display_inc, (165, height - 62))
 
-        for button in self.shop_buttons:
-            button.draw(screen)
-            button.draw_info(screen)
+        for i, position in enumerate(self.point_positions):
+            screen.blit(self.point_images[self.point_levels[i]], self.rects[i].topleft)
+            text_item = self.font5.render(f"Уровень {self.shop.items[i].level}", True, space_color)
+            screen.blit(text_item, (50, 130 + i * 85))
 
         shop_info = self.shop.get_shop_info()
         for i, info in enumerate(shop_info):
-            text = self.font3.render(info, True, white)
-            rect = text.get_rect(midleft=(250, 120 + i * 70))
-            screen.blit(text, rect)
+            text1 = self.font3.render(info[0], True, vivid_orange)
+            rect1 = text1.get_rect(midleft=(250, 130 + i * 85))
+            screen.blit(text1, rect1)
+            text2 = self.font3.render(info[1], True, vivid_orange)
+            rect2 = text2.get_rect(midleft=(250, 160 + i * 85))
+            screen.blit(text2, rect2)
 
 
 class PlanetScreenState:
@@ -800,8 +845,8 @@ class PlanetScreenState:
         self.dark_back_button_icon = pygame.image.load("data/dark back.png")
 
         self.shop_button_rect = pygame.Rect(25, 25, 200, 65)
-        self.shop_button_icon = pygame.image.load("data/shop.png")
-        self.dark_shop_button_icon = pygame.image.load("data/dark shop.png")
+        self.shop_button_icon = pygame.image.load("data/button_0.png")
+        self.dark_shop_button_icon = pygame.image.load("data/button_1.png")
 
         self.help_button_rect = pygame.Rect(720, 25, 65, 65)
         self.help_button_icon = pygame.image.load("data/help.png")
@@ -910,7 +955,6 @@ class PlanetScreenState:
                 self.point_levels = self.p.copy()
                 self.point_levels[i] += 1
                 b = 1
-                print(self.p.copy())
                 break
         if not b:
             self.point_levels = self.p.copy()
@@ -973,6 +1017,7 @@ planet_4 = PlanetScreenState(4, current_state)
 planets = [planet_1, planet_2, planet_3, planet_4]
 
 running = True
+p, t = game_state, game_state
 
 while running:
     events = pygame.event.get()
@@ -984,31 +1029,32 @@ while running:
     # Обработка событий и переключение сцен
     result = current_state.handle_events(events)
     if result:
+        click_sound.play()
         if result == "settings":
-            click_sound.play()
             p = current_state
             current_state = settings_menu
             game_state_prev = p
         elif result == "shop":
-            click_sound.play()
+            t = current_state
             p = current_state
             current_state = shop_menu
             game_state_prev = p
         elif result == "instruction":
-            click_sound.play()
             p = current_state
             current_state = instruction
             game_state_prev = p
         elif result == "back":
-            click_sound.play()
             p = current_state
             current_state = game_state_prev
             game_state_prev = p
         elif result == "menu":
-            click_sound.play()
             p = current_state
             current_state = game_state
             game_state_prev = p
+        elif result == "back1":
+            current_state = t
+        elif result == "back2":
+            current_state = game_state_prev
 
     game_state.auto_update_money()
     current_state.update()
