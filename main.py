@@ -1,33 +1,36 @@
+import os
 import sys
 import pygame
 import math
 import sqlite3
+import pickle
+
+
+def is_first_time():
+    db_path = "player_data.db"
+    return not os.path.exists(db_path)
 
 
 def enter_game(player_id):
-    # Загрузка данных
-    player_db = PlayerDatabase()
-    loaded_data = player_db.load_player_data(player_id)
-    if loaded_data:
+    if not is_first_time():
+        player_db = PlayerDatabase()
+        loaded_data = player_db.load_player_data(player_id)
         money, increment, increment_click, shop_data = loaded_data
-        # Используйте данные для установки состояния игры
         game_state.set_money(money)
         game_state.set_increment(increment)
         game_state.set_increment_click(increment_click)
-    # продолжить здесь
 
 
 def exit_game():
-    # Сохранение данных
     player_db = PlayerDatabase()
     player_id = 1
     money = game_state.get_money()
     increment = game_state.get_increment()
     increment_click = game_state.get_increment_click()
-    shop_data = game_state.get_shop()  # Используйте метод для получения данных магазина
+    shop_data = game_state.get_shop()
     player_db.save_player_data(player_id, money, increment, increment_click, shop_data)
+    print(money)
 
-    # Завершение игры
     pygame.quit()
     sys.exit()
 
@@ -52,17 +55,23 @@ class PlayerDatabase:
         self.conn.commit()
 
     def save_player_data(self, player_id, money, increment, increment_click, shop_data):
+        serialized_shop_data = pickle.dumps(shop_data)
         self.cursor.execute('''
-            INSERT INTO players (id, money, increment, increment_click, shop_data)
+            INSERT OR REPLACE INTO players (id, money, increment, increment_click, shop_data)
             VALUES (?, ?, ?, ?, ?)
-        ''', (player_id, money, increment, increment_click, shop_data))
+        ''', (player_id, money, increment, increment_click, serialized_shop_data))
         self.conn.commit()
 
     def load_player_data(self, player_id):
         query = "SELECT * FROM players WHERE id = ?;"
         self.cursor.execute(query, (player_id,))
         data = self.cursor.fetchone()
-        return data
+        if data:
+            player_id, money, increment, increment_click, serialized_shop_data = data
+            shop_data = pickle.loads(serialized_shop_data)
+            return money, increment, increment_click, shop_data
+        else:
+            return None
 
 
 pygame.init()
@@ -112,6 +121,9 @@ class GameState:
         self.last_money_update_time = pygame.time.get_ticks()
         self.shop = Shop()
 
+    def set_shop(self, shop):
+        self.shop = shop
+
     def get_shop(self):
         return self.shop
 
@@ -128,7 +140,7 @@ class GameState:
             self.money += multiplier
 
     def set_increment(self, new_increment):
-        self.money = new_increment
+        self.increment = new_increment
 
     def get_increment(self):
         return self.increment
@@ -143,7 +155,7 @@ class GameState:
             self.last_money_update_time = current_time
 
     def set_increment_click(self, new_increment_click):
-        self.money = new_increment_click
+        self.increment_click = new_increment_click
 
     def get_increment_click(self):
         return self.increment_click
@@ -387,7 +399,7 @@ class GameScreenState:
         self.settings_button_icon = pygame.image.load("data/settings.png")
         self.dark_settings_button_icon = pygame.image.load("data/dark settings.png")
 
-        self.money = 0
+        # self.money = 0
         self.money_border = pygame.Rect(25, 455, 250, 120)
         self.money_border_icon = pygame.image.load("data/border.png")
 
@@ -1071,4 +1083,4 @@ while running:
 
 if __name__ == "__main__":
     enter_game(1)
-    pygame.quit()
+    exit_game()
