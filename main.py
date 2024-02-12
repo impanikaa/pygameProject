@@ -397,7 +397,7 @@ class GameScreenState:
         self.clicked_on_click_button = False
 
         self.star_rect = pygame.Rect(475, 270, 60, 60)
-        self.star_image = pygame.image.load("data/star.png")
+        self.star_image = pygame.image.load("data/planets/star.png")
 
         self.draw_light_icons = [self.shop_button_icon, self.help_button_icon, self.settings_button_icon,
                                  self.money_border_icon, self.click_button_icon, self.star_image]
@@ -416,10 +416,10 @@ class GameScreenState:
         self.planet_3_rect = pygame.Rect(0, 0, 55, 55)
         self.planet_4_rect = pygame.Rect(0, 0, 35, 35)
 
-        self.planet1_image = pygame.image.load("data/planet1.png")
-        self.planet2_image = pygame.image.load("data/planet2.png")
-        self.planet3_image = pygame.image.load("data/planet3.png")
-        self.planet4_image = pygame.image.load("data/planet4.png")
+        self.planet1_image = pygame.image.load("data/planets/planet1.png")
+        self.planet2_image = pygame.image.load("data/planets/planet2.png")
+        self.planet3_image = pygame.image.load("data/planets/planet3.png")
+        self.planet4_image = pygame.image.load("data/planets/planet4.png")
 
         self.orbit_1 = pygame.Rect(280, 75, 450, 450)
         self.orbit_2 = pygame.Rect(340, 135, 330, 330)
@@ -608,6 +608,7 @@ class Button:
 
 class InstructionScreen(Scene):
     def __init__(self):
+        super().__init__()
         global font1
         self.font1 = font1
         self.close_button = pygame.Rect(350, 535, 200, 50)
@@ -641,6 +642,41 @@ class InstructionScreen(Scene):
         screen.blit(close_text, close_rect)
 
 
+class StartScreen(Scene):
+    def __init__(self):
+        super().__init__()
+        self.font2, self.font4 = font2, font4
+
+        self.play_button_rect = pygame.Rect(390, 295, 120, 120)
+        self.play_button_icon = pygame.image.load("data/start/play.png")
+
+        self.help_button_rect = pygame.Rect(310, 205, 200, 65)
+        self.help_button_icon = pygame.image.load("data/start/help.png")
+
+        self.settings_button_rect = pygame.Rect(525, 205, 65, 65)
+        self.settings_button_icon = pygame.image.load("data/start/settings.png")
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.play_button_rect.collidepoint(event.pos):
+                    return "menu"
+                elif self.help_button_rect.collidepoint(event.pos):
+                    return "instruction"
+                elif self.settings_button_rect.collidepoint(event.pos):
+                    return "settings"
+        return None
+
+    def draw(self, screen):
+        text_welcome = self.font4.render("Добро пожаловать в ”Космический Кликер”!", True, vivid_orange)
+        screen.blit(text_welcome, (205, 150))
+        text_continue = self.font2.render("Начать/продолжить игру", True, vivid_orange)
+        screen.blit(text_continue, (350, 440))
+        screen.blit(self.play_button_icon, self.play_button_rect.topleft)
+        screen.blit(self.help_button_icon, self.help_button_rect.topleft)
+        screen.blit(self.settings_button_icon, self.settings_button_rect.topleft)
+
+
 # Класс для предметов в магазине
 class ShopItem:
     def __init__(self, name, base_click_value, base_cost):
@@ -671,8 +707,7 @@ class Shop:
             ShopItem("Обсидиановая кирка", base_click_value=1, base_cost=50),
             ShopItem("Медная дрель", base_click_value=3, base_cost=200),
             ShopItem("Метановый газовик", base_click_value=10, base_cost=500),
-            ShopItem("Аметистовый экскаватор", base_click_value=20, base_cost=1000),
-            # Добавьте другие предметы магазина по аналогии
+            ShopItem("Аметистовый экскаватор", base_click_value=20, base_cost=1000)
         ]
         self.money = 0
         self.max_level = 5
@@ -704,11 +739,6 @@ class ShopScene(Scene):
     def __init__(self):
         super().__init__()
         self.shop = Shop()
-        # self.shop_buttons = [
-        #     Button(30, 100 + i * 70, 200, 50, vivid_orange, f"Купить {i + 1}", "",
-        #            action=lambda i=i: self.purchase_item(i))
-        #     for i in range(len(self.shop.items))
-        # ]
 
         self.back_button_rect = pygame.Rect(25, 25, 65, 65)
         self.back_button_icon = pygame.image.load("data/back.png")
@@ -831,7 +861,7 @@ class PlanetScreenState:
     def __init__(self, planet_id, current_state):
         self.planet_id = planet_id
         self.current_state = current_state
-        self.planet_image = pygame.image.load(f"data/planet{planet_id}_big.png")
+        self.planet_image = pygame.image.load(f"data/planets/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)
         global font3, font5
         self.font3 = font3
@@ -1000,17 +1030,18 @@ class PlanetScreenState:
 
 
 game_state = GameState()
-pygame.mixer.music.load("data/startrack.mp3")
+pygame.mixer.music.load("data/music/startrack.mp3")
 pygame.mixer.music.set_volume(0.5)
 
 pygame.mixer.init()
-click_sound = pygame.mixer.Sound("data/button.wav")
+click_sound = pygame.mixer.Sound("data/music/button.wav")
 click_sound.set_volume(0.5)
 shop_menu = ShopScene()
 instruction = InstructionScreen()
 settings_menu = SettingsMenu()
+start = StartScreen()
 clock = pygame.time.Clock()
-current_state = game_state
+current_state = start
 game_state_prev = current_state
 planet_1 = PlanetScreenState(1, current_state)
 planet_2 = PlanetScreenState(2, current_state)
@@ -1052,6 +1083,10 @@ while running:
         elif result == "menu":
             p = current_state
             current_state = game_state
+            game_state_prev = p
+        elif result == "start":
+            p = current_state
+            current_state = start
             game_state_prev = p
         elif result == "back1":
             current_state = t
