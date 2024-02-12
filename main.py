@@ -518,7 +518,7 @@ class GameScreenState:
                 a = 1
                 break
         if not a:
-            self.draw_icons = [0 for i in range(len(self.draw_rects))]
+            self.draw_icons = [0 for _ in range(len(self.draw_rects))]
 
     def handle_events(self, events):
         for event in events:
@@ -683,13 +683,31 @@ class StartScreen(Scene):
 
         self.play_button_rect = pygame.Rect(390, 295, 120, 120)
         self.play_button_icon = pygame.image.load("data/start/play.png")
+        self.dark_play_button_icon = pygame.image.load("data/start/dark play.png")
 
         self.help_button_rect = pygame.Rect(310, 205, 200, 65)
         self.help_button_icon = pygame.image.load("data/start/help.png")
+        self.dark_help_button_icon = pygame.image.load("data/start/dark help.png")
 
         self.settings_button_rect = pygame.Rect(525, 205, 65, 65)
         self.settings_button_icon = pygame.image.load("data/start/settings.png")
+        self.dark_settings_button_icon = pygame.image.load("data/start/dark settings.png")
 
+        self.draw_light_icons = [self.play_button_icon, self.help_button_icon, self.settings_button_icon]
+        self.draw_dark_icons = [self.dark_play_button_icon, self.dark_help_button_icon, self.dark_settings_button_icon]
+        self.draw_icons = [False for _ in range(len(self.draw_light_icons))]
+        self.draw_rects = [self.play_button_rect, self.help_button_rect, self.settings_button_rect]
+
+    def update(self):
+        a = 0
+        for i, x in enumerate(self.draw_rects):
+            if x.collidepoint(pygame.mouse.get_pos()):
+                self.draw_icons = [0 for i in range(len(self.draw_rects))]
+                self.draw_icons[i] = 1
+                a = 1
+                break
+        if not a:
+            self.draw_icons = [0 for _ in range(len(self.draw_rects))]
 
     def handle_events(self, events):
         for event in events:
@@ -703,13 +721,18 @@ class StartScreen(Scene):
         return None
 
     def draw(self, screen):
+        for i in range(len(self.draw_icons)):
+            if self.draw_icons[i] == 0:
+                screen.blit(self.draw_light_icons[i], self.draw_rects[i])
+            else:
+                screen.blit(self.draw_dark_icons[i], self.draw_rects[i])
         text_welcome = self.font4.render("Добро пожаловать в ”Космический Кликер”!", True, vivid_orange)
         screen.blit(text_welcome, (205, 150))
         text_continue = self.font2.render("Начать/продолжить игру", True, vivid_orange)
         screen.blit(text_continue, (350, 440))
-        screen.blit(self.play_button_icon, self.play_button_rect.topleft)
-        screen.blit(self.help_button_icon, self.help_button_rect.topleft)
-        screen.blit(self.settings_button_icon, self.settings_button_rect.topleft)
+        # screen.blit(self.play_button_icon, self.play_button_rect.topleft)
+        # screen.blit(self.help_button_icon, self.help_button_rect.topleft)
+        # screen.blit(self.settings_button_icon, self.settings_button_rect.topleft)
 
 
 class FinishScreen(Scene):
@@ -719,8 +742,17 @@ class FinishScreen(Scene):
 
         self.play_button_rect = pygame.Rect(390, 306, 120, 120)
         self.play_button_icon = pygame.image.load("data/start/play.png")
+        self.dark_play_button_icon = pygame.image.load("data/start/dark play.png")
         self.cat_rect = pygame.Rect(400, 190, 100, 100)
         self.cat_icon = pygame.image.load("data/finish/cat.jpg")
+        self.draw_icon = 0
+        self.icons = [self.play_button_icon, self.dark_play_button_icon]
+
+    def update(self):
+        if self.play_button_rect.collidepoint(pygame.mouse.get_pos()):
+            self.draw_icon = 1
+        else:
+            self.draw_icon = 0
 
     def handle_events(self, events):
         for event in events:
@@ -730,6 +762,10 @@ class FinishScreen(Scene):
         return None
 
     def draw(self, screen):
+        if self.draw_icon:
+            screen.blit(self.dark_play_button_icon, self.play_button_rect.topleft)
+        else:
+            screen.blit(self.play_button_icon, self.play_button_rect.topleft)
         text_congratulations1 = self.font4.render("Поздравляем, вы прошли игру!", True, vivid_orange)
         screen.blit(text_congratulations1, (113, 80))
         text_congratulations2 = self.font4.render("И выиграли потрясающего кота-космонавта", True, vivid_orange)
@@ -739,7 +775,6 @@ class FinishScreen(Scene):
         text_money = self.font1.render("В качестве благодарности разработчикам за этот шедевр "
                                        "вы можете задонатить на карту 2202 2023 8498 8345", True, vivid_orange)
         screen.blit(text_money, (35, 570))
-        screen.blit(self.play_button_icon, self.play_button_rect.topleft)
         screen.blit(self.cat_icon, self.cat_rect.topleft)
 
 
