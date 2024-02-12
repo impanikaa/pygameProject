@@ -10,6 +10,22 @@ def is_first_time():
     return not os.path.exists(db_path) or os.path.getsize(db_path) == 0
 
 
+def clear_player_data():
+    db_path = "player_data.db"
+    try:
+        conn = sqlite3.connect(db_path)
+        cursor = conn.cursor()
+        cursor.execute('''
+            UPDATE players 
+            SET money = 0, increment = 0, increment_click = 1;
+        ''')
+        conn.commit()
+        conn.close()
+        print("Player data cleared.")
+    except Exception as e:
+        print(f"Error clearing player data: {e}")
+
+
 def exit_game():
     player_db = PlayerDatabase()
     player_id = 1
@@ -656,6 +672,7 @@ class StartScreen(Scene):
         self.settings_button_rect = pygame.Rect(525, 205, 65, 65)
         self.settings_button_icon = pygame.image.load("data/start/settings.png")
 
+
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
@@ -675,6 +692,34 @@ class StartScreen(Scene):
         screen.blit(self.play_button_icon, self.play_button_rect.topleft)
         screen.blit(self.help_button_icon, self.help_button_rect.topleft)
         screen.blit(self.settings_button_icon, self.settings_button_rect.topleft)
+
+
+class FinishScreen(Scene):
+    def __init__(self):
+        super().__init__()
+        self.font1, self.font2, self.font4 = font1, font2, font4
+
+        self.play_button_rect = pygame.Rect(390, 306, 120, 120)
+        self.play_button_icon = pygame.image.load("data/start/play.png")
+
+    def handle_events(self, events):
+        for event in events:
+            if event.type == pygame.MOUSEBUTTONDOWN and event.button == 1:
+                if self.play_button_rect.collidepoint(event.pos):
+                    return "clear_player_data"
+        return None
+
+    def draw(self, screen):
+        text_congratulations1 = self.font4.render("Поздравляем, вы прошли игру!", True, vivid_orange)
+        screen.blit(text_congratulations1, (113, 80))
+        text_congratulations2 = self.font4.render("И выиграли потрясающего кота-космонавта", True, vivid_orange)
+        screen.blit(text_congratulations2, (113, 110))
+        text_again = self.font2.render("Начать заново?", True, vivid_orange)
+        screen.blit(text_again, (385, 440))
+        text_money = self.font1.render("В качестве благодарности разработчикам за этот шедевр "
+                                       "вы можете задонатить на карту 2202 2023 8498 8345", True, vivid_orange)
+        screen.blit(text_money, (35, 570))
+        screen.blit(self.play_button_icon, self.play_button_rect.topleft)
 
 
 # Класс для предметов в магазине
@@ -860,6 +905,7 @@ class ShopScene(Scene):
 class PlanetScreenState:
     def __init__(self, planet_id, current_state):
         self.planet_id = planet_id
+        self.game_state = game_state
         self.current_state = current_state
         self.planet_image = pygame.image.load(f"data/planets/planet{planet_id}_big.png")
         self.orbit_rect = pygame.Rect(0, 0, 0, 0)
@@ -946,9 +992,7 @@ class PlanetScreenState:
                             break
 
     def update_increment(self, point_index):
-
-        # Проверяем, хватает ли денег на обновление уровня точки
-        if self.current_state.get_money() >= self.cost_point:
+        if self.game_state.get_money() >= self.cost_point:
             # Получаем уровень точки
             self.point_levels[point_index] += 1
             self.p = self.point_levels.copy()
@@ -966,7 +1010,7 @@ class PlanetScreenState:
 
         # Обновление money при клике
         if self.clicked_on_click_button:
-            self.current_state.update_money(1, 1)
+            self.game_state.update_money(1, 1)
             self.clicked_on_click_button = False
 
         a = 0
@@ -1040,6 +1084,7 @@ shop_menu = ShopScene()
 instruction = InstructionScreen()
 settings_menu = SettingsMenu()
 start = StartScreen()
+final = FinishScreen()
 clock = pygame.time.Clock()
 current_state = start
 game_state_prev = current_state
@@ -1058,6 +1103,9 @@ while running:
     for event in events:
         if event.type == pygame.QUIT:
             running = False
+
+    if game_state.get_money() >= 10:
+        current_state = final
 
     # Обработка событий и переключение сцен
     result = current_state.handle_events(events)
@@ -1088,6 +1136,15 @@ while running:
             p = current_state
             current_state = start
             game_state_prev = p
+        elif result == "final":
+            p = current_state
+            current_state = final
+            game_state_prev = p
+        elif result == "clear_player_data":
+            p = current_state
+            current_state = start
+            game_state_prev = p
+            clear_player_data()
         elif result == "back1":
             current_state = t
         elif result == "back2":
