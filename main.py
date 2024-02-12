@@ -22,6 +22,14 @@ def clear_player_data():
         conn.commit()
         conn.close()
         print("Player data cleared.")
+        game_state.set_money(0)
+        game_state.set_increment(0)
+        game_state.set_increment_click(1)
+        planet_1.restart()
+        planet_2.restart()
+        planet_3.restart()
+        planet_4.restart()
+        shop_menu.restart()
     except Exception as e:
         print(f"Error clearing player data: {e}")
 
@@ -37,6 +45,16 @@ def exit_game():
 
     pygame.quit()
     sys.exit()
+
+
+def start_game():
+    player_db = PlayerDatabase()
+    player_id = 1
+    money = 0
+    increment = 0
+    increment_click = 1
+    player_db.save_player_data(player_id, money, increment, increment_click)
+    print(money, increment, increment_click)
 
 
 # Класс для хранения данных игрока и работы с базой данных
@@ -821,9 +839,6 @@ class ShopScene(Scene):
             rect = pygame.Rect(self.point_positions[i][0], self.point_positions[i][1], 200, 65)
             self.rects.append(rect)
 
-        # self.back_button_rect = pygame.Rect(25, 25, 65, 65)
-        # self.exit_button = Button(30, 20, 200, 50, vivid_orange, "Назад", "Вернуться назад")
-
         self.shop_button_rect = pygame.Rect(25, 110, 200, 65)
         self.shop_button_icon = pygame.image.load("data/button_0.png")
         self.dark_shop_button_icon = pygame.image.load("data/button_1.png")
@@ -831,6 +846,10 @@ class ShopScene(Scene):
         global font3, font5
         self.font3 = font3
         self.font5 = font5
+
+    def restart(self):
+        for i in range(4):
+            self.shop.items[i].level = 0
 
     def purchase_item(self, item_index):
         self.shop.purchase_item(item_index)
@@ -974,6 +993,9 @@ class PlanetScreenState:
             rect = pygame.Rect(self.point_positions[i][0], self.point_positions[i][1], 70, 100)
             self.rects.append(rect)
 
+    def restart(self):
+        self.point_levels = [0, 0, 0]
+
     def handle_events(self, events):
         for event in events:
             if event.type == pygame.MOUSEBUTTONDOWN:
@@ -1097,6 +1119,7 @@ planet_3 = PlanetScreenState(3, current_state)
 planet_4 = PlanetScreenState(4, current_state)
 planets = [planet_1, planet_2, planet_3, planet_4]
 
+start_game()
 running = True
 p, t = game_state, game_state
 
@@ -1107,7 +1130,7 @@ while running:
         if event.type == pygame.QUIT:
             running = False
 
-    if game_state.get_money() >= 10:
+    if game_state.get_money() >= 200:
         current_state = final
 
     # Обработка событий и переключение сцен
