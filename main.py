@@ -701,6 +701,8 @@ class FinishScreen(Scene):
 
         self.play_button_rect = pygame.Rect(390, 306, 120, 120)
         self.play_button_icon = pygame.image.load("data/start/play.png")
+        self.cat_rect = pygame.Rect(400, 190, 100, 100)
+        self.cat_icon = pygame.image.load("data/finish/cat.png")
 
     def handle_events(self, events):
         for event in events:
