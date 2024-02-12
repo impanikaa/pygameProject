@@ -3,22 +3,11 @@ import sys
 import pygame
 import math
 import sqlite3
-import pickle
 
 
 def is_first_time():
     db_path = "player_data.db"
-    return not os.path.exists(db_path)
-
-
-def enter_game(player_id):
-    if not is_first_time():
-        player_db = PlayerDatabase()
-        loaded_data = player_db.load_player_data(player_id)
-        money, increment, increment_click, shop_data = loaded_data
-        game_state.set_money(money)
-        game_state.set_increment(increment)
-        game_state.set_increment_click(increment_click)
+    return not os.path.exists(db_path) or os.path.getsize(db_path) == 0
 
 
 def exit_game():
@@ -27,9 +16,8 @@ def exit_game():
     money = game_state.get_money()
     increment = game_state.get_increment()
     increment_click = game_state.get_increment_click()
-    shop_data = game_state.get_shop()
-    player_db.save_player_data(player_id, money, increment, increment_click, shop_data)
-    print(money)
+    player_db.save_player_data(player_id, money, increment, increment_click)
+    print(money, increment, increment_click)
 
     pygame.quit()
     sys.exit()
@@ -48,30 +36,23 @@ class PlayerDatabase:
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
                 money REAL,
                 increment REAL,
-                increment_click REAL,
-                shop_data BLOB
+                increment_click REAL
             )
         ''')
         self.conn.commit()
 
-    def save_player_data(self, player_id, money, increment, increment_click, shop_data):
-        serialized_shop_data = pickle.dumps(shop_data)
+    def save_player_data(self, player_id, money, increment, increment_click):
         self.cursor.execute('''
-            INSERT OR REPLACE INTO players (id, money, increment, increment_click, shop_data)
-            VALUES (?, ?, ?, ?, ?)
-        ''', (player_id, money, increment, increment_click, serialized_shop_data))
+            INSERT OR REPLACE INTO players (id, money, increment, increment_click)
+            VALUES (?, ?, ?, ?)
+        ''', (player_id, money, increment, increment_click))
         self.conn.commit()
 
     def load_player_data(self, player_id):
-        query = "SELECT * FROM players WHERE id = ?;"
+        query = "SELECT money, increment, increment_click FROM players WHERE id = ?;"
         self.cursor.execute(query, (player_id,))
         data = self.cursor.fetchone()
-        if data:
-            player_id, money, increment, increment_click, serialized_shop_data = data
-            shop_data = pickle.loads(serialized_shop_data)
-            return money, increment, increment_click, shop_data
-        else:
-            return None
+        return data
 
 
 pygame.init()
@@ -84,11 +65,11 @@ white = (255, 255, 255)
 space_color = (0, 2, 18)
 dark_grey = (70, 70, 70)
 
-font1 = pygame.sysfont.SysFont(None, 24)
-font2 = pygame.sysfont.SysFont(None, 28)
-font3 = pygame.sysfont.SysFont(None, 32)
-font4 = pygame.sysfont.SysFont(None, 36)
-font5 = pygame.sysfont.SysFont(None, 42)
+font1 = pygame.sysfont.SysFont(None, 22)
+font2 = pygame.sysfont.SysFont(None, 24)
+font3 = pygame.sysfont.SysFont(None, 28)
+font4 = pygame.sysfont.SysFont(None, 32)
+font5 = pygame.sysfont.SysFont(None, 36)
 
 
 def draw_image(name, coords):
@@ -114,9 +95,16 @@ class GameState:
     def __init__(self):
         self.current_state = GameScreenState()
         self.selected_planet = None
-        self.money = 0
-        self.increment_click = 1
-        self.increment = 0
+        if is_first_time():
+            self.money = 0
+            self.increment_click = 1
+            self.increment = 0
+        else:
+            player_db = PlayerDatabase()
+            loaded_data = player_db.load_player_data(1)
+            print(loaded_data)
+            self.money, self.increment, self.increment_click = loaded_data
+            print(self.money, self.increment, self.increment_click)
         self.money_update_interval = 1000
         self.last_money_update_time = pygame.time.get_ticks()
         self.shop = Shop()
@@ -131,7 +119,7 @@ class GameState:
         self.money = new_money
 
     def get_money(self):
-        return self.money
+        return int(self.money)
 
     def update_money(self, multiplier, add):
         if add:
@@ -143,7 +131,7 @@ class GameState:
         self.increment = new_increment
 
     def get_increment(self):
-        return self.increment
+        return int(self.increment)
 
     def update_increment(self, additional):
         self.increment += additional
@@ -158,7 +146,7 @@ class GameState:
         self.increment_click = new_increment_click
 
     def get_increment_click(self):
-        return self.increment_click
+        return int(self.increment_click)
 
     def update_increment_click(self, additional):
         self.increment_click += additional
@@ -557,12 +545,12 @@ class GameScreenState:
         # отрисовка счёта
         text_money = self.font5.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (50, height - 127))
-        display_score = self.font3.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
+        display_score = self.font3.render(f"{round(game_state.get_money(), 2)} руб", True, vivid_orange)
         screen.blit(display_score, (50, height - 92))
-        display_inc_click = self.font3.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True,
+        display_inc_click = self.font3.render(f"{round(game_state.get_increment_click(), 2)} руб/клик", True,
                                               vivid_orange)
         screen.blit(display_inc_click, (50, height - 62))
-        display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
+        display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} руб/сек", True, vivid_orange)
         screen.blit(display_inc, (165, height - 62))
 
         # Обновление углов планет
@@ -816,12 +804,12 @@ class ShopScene(Scene):
         screen.blit(self.money_border_icon, self.money_border)
         text_money = self.font5.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (50, height - 127))
-        display_score = self.font3.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
+        display_score = self.font3.render(f"{round(game_state.get_money(), 2)} руб", True, vivid_orange)
         screen.blit(display_score, (50, height - 92))
-        display_inc_click = self.font3.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True,
+        display_inc_click = self.font3.render(f"{round(game_state.get_increment_click(), 2)} руб/клик", True,
                                               vivid_orange)
         screen.blit(display_inc_click, (50, height - 62))
-        display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
+        display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} руб/сек", True, vivid_orange)
         screen.blit(display_inc, (165, height - 62))
 
         for i, position in enumerate(self.point_positions):
@@ -888,16 +876,16 @@ class PlanetScreenState:
         # Инициализация точек
         self.point_positions = [(410, 100), (480, 160), (550, 100)]
         if planet_id == 1:
-            self.cost_point = 1500
+            self.cost_point = 5000
             self.point_images = [pygame.image.load(f"data/icons/ametist_{i}.png") for i in range(8)]
         elif planet_id == 2:
-            self.cost_point = 750
+            self.cost_point = 3000
             self.point_images = [pygame.image.load(f"data/icons/metan_{i}.png") for i in range(8)]
         elif planet_id == 3:
-            self.cost_point = 500
+            self.cost_point = 800
             self.point_images = [pygame.image.load(f"data/icons/copper_{i}.png") for i in range(8)]
         elif planet_id == 4:
-            self.cost_point = 10
+            self.cost_point = 100
             self.point_images = [pygame.image.load(f"data/icons/obsidian_{i}.png") for i in range(8)]
         self.point_levels = [0, 0, 0]
         self.p = self.point_levels.copy()
@@ -934,7 +922,7 @@ class PlanetScreenState:
             # Получаем уровень точки
             self.point_levels[point_index] += 1
             self.p = self.point_levels.copy()
-            inc = [1, 10, 50, 100]
+            inc = [1, 3, 10, 20]
             game_state.update_increment(inc[-self.planet_id])
             game_state.update_money(-self.cost_point, 0)
 
@@ -992,17 +980,19 @@ class PlanetScreenState:
         text_click = self.font5.render("Клик", True, space_color)
         text_click_rect = text_click.get_rect(center=self.click_button_rect.center)
         screen.blit(text_click, text_click_rect)
+        text_price = self.font3.render(f"Улучшение шахты: {self.cost_point} руб", True, vivid_orange)
+        screen.blit(text_price, (25, 420))
 
         # Отрисовка счёта
         screen.blit(self.money_border_icon, self.money_border)
         text_money = self.font5.render("Ваш баланс:", True, vivid_orange)
         screen.blit(text_money, (50, height - 127))
-        display_score = self.font3.render(f"{round(game_state.get_money(), 2)} $", True, vivid_orange)
+        display_score = self.font3.render(f"{round(game_state.get_money(), 2)} руб", True, vivid_orange)
         screen.blit(display_score, (50, height - 92))
-        display_inc_click = self.font3.render(f"{round(game_state.get_increment_click(), 2)} $/клик", True,
+        display_inc_click = self.font3.render(f"{round(game_state.get_increment_click(), 2)} руб/клик", True,
                                               vivid_orange)
         screen.blit(display_inc_click, (50, height - 62))
-        display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} $/сек", True, vivid_orange)
+        display_inc = self.font3.render(f"{round(game_state.get_increment(), 2)} руб/сек", True, vivid_orange)
         screen.blit(display_inc, (165, height - 62))
 
         for i, position in enumerate(self.point_positions):
@@ -1082,5 +1072,4 @@ while running:
     clock.tick(60)
 
 if __name__ == "__main__":
-    enter_game(1)
     exit_game()
