@@ -702,7 +702,7 @@ class FinishScreen(Scene):
         self.play_button_rect = pygame.Rect(390, 306, 120, 120)
         self.play_button_icon = pygame.image.load("data/start/play.png")
         self.cat_rect = pygame.Rect(400, 190, 100, 100)
-        self.cat_icon = pygame.image.load("data/finish/cat.png")
+        self.cat_icon = pygame.image.load("data/finish/cat.jpg")
 
     def handle_events(self, events):
         for event in events:
@@ -722,6 +722,7 @@ class FinishScreen(Scene):
                                        "вы можете задонатить на карту 2202 2023 8498 8345", True, vivid_orange)
         screen.blit(text_money, (35, 570))
         screen.blit(self.play_button_icon, self.play_button_rect.topleft)
+        screen.blit(self.cat_icon, self.cat_rect.topleft)
 
 
 # Класс для предметов в магазине
@@ -1144,9 +1145,9 @@ while running:
             game_state_prev = p
         elif result == "clear_player_data":
             p = current_state
-            current_state = start
             game_state_prev = p
             clear_player_data()
+            current_state = start
         elif result == "back1":
             current_state = t
         elif result == "back2":
