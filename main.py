@@ -668,10 +668,10 @@ class ShopItem:
 class Shop:
     def __init__(self):
         self.items = [
-            ShopItem("Обсидиановая кирка", base_click_value=1, base_cost=10),
-            ShopItem("Медная дрель", base_click_value=5, base_cost=20),
-            ShopItem("Метановый газовик", base_click_value=10, base_cost=50),
-            ShopItem("Аметистовый экскаватор", base_click_value=20, base_cost=100),
+            ShopItem("Обсидиановая кирка", base_click_value=1, base_cost=50),
+            ShopItem("Медная дрель", base_click_value=3, base_cost=200),
+            ShopItem("Метановый газовик", base_click_value=10, base_cost=500),
+            ShopItem("Аметистовый экскаватор", base_click_value=20, base_cost=1000),
             # Добавьте другие предметы магазина по аналогии
         ]
         self.money = 0
